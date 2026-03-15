@@ -7,11 +7,6 @@ RUN apt-get update && apt-get install -y g++ && rm -rf /var/lib/apt/lists/*
 # Set working directory
 WORKDIR /app
 
-# Copy and install Python requirements
-# Note: Ensure you have a requirements.txt in the folder
-# COPY requirements.txt .
-# RUN pip install --no-cache-dir -r requirements.txt
-
 # Copy the project files
 COPY . .
 
