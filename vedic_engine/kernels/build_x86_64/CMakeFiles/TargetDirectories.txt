@@ -1,0 +1,4 @@
+/content/Krishi-Veda-Module_v2/vedic_engine/kernels/build_x86_64/CMakeFiles/urdhva_sutra.dir
+/content/Krishi-Veda-Module_v2/vedic_engine/kernels/build_x86_64/CMakeFiles/nikhilam_sutra.dir
+/content/Krishi-Veda-Module_v2/vedic_engine/kernels/build_x86_64/CMakeFiles/edit_cache.dir
+/content/Krishi-Veda-Module_v2/vedic_engine/kernels/build_x86_64/CMakeFiles/rebuild_cache.dir

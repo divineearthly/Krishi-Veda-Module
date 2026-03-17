@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -shared -Wl,-soname,liburdhva_sutra.so -o liburdhva_sutra.so CMakeFiles/urdhva_sutra.dir/urdhva_sutra.cpp.o

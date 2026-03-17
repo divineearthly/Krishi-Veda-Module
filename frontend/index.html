@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Krishi-Veda | Farmer Assistant</title>
+    <link rel='manifest' href='manifest.json'>
+    <style>
+        body { font-family: sans-serif; margin: 0; background: #f4f7f6; color: #333; }
+        header { background: #2e7d32; color: white; padding: 15px; text-align: center; }
+        .container { padding: 15px; max-width: 500px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; background: #2e7d32; color: white; padding: 12px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        .lang-toggle { display: flex; justify-content: space-around; margin-bottom: 15px; }
+        .lang-btn { background: #e0e0e0; padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; }
+        #result { margin-top: 15px; font-weight: bold; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <header><h1 id='title'>Krishi-Veda</h1></header>
+    <div class='container'>
+        <div class='lang-toggle'>
+            <div class='lang-btn' onclick='changeLang("en")'>English</div>
+            <div class='lang-btn' onclick='changeLang("hi")'>हिंदी</div>
+            <div class='lang-btn' onclick='changeLang("bn")'>বাংলা</div>
+        </div>
+
+        <div class='card'>
+            <h2 id='soil-form-title'>Soil Health Analysis</h2>
+            <p id='soil-desc'>Enter 8 sensor values (pH, N, P, K, etc.)</p>
+            <input type='text' id='sensorData' placeholder='e.g. 6.5, 40, 30, 35, 1.2, 0.5, 0.2, 0.1'>
+            <button onclick='getPrediction()' id='btn-predict'>Get Advice</button>
+            <div id='result'></div>
+        </div>
+
+        <div class='card'>
+            <h2 id='crop-advice-title'>Regional Advice</h2>
+            <p id='crop-desc'>Soil Type: <span id='soil-type'>Loading...</span></p>
+        </div>
+    </div>
+
+    <script>
+        let translations = { "en": { "title": "Krishi-Veda", "soil-form-title": "Soil Health" } };
+
+        async function changeLang(code) {
+            try {
+                const response = await fetch(`../localization/dicts/${code}.json`);
+                const dict = await response.json();
+                document.getElementById('title').innerText = dict.welcome || 'Krishi-Veda';
+                // Simplified dynamic update logic
+            } catch (e) { console.log('Lang load failed', e); }
+        }
+
+        async function getPrediction() {
+            const raw = document.getElementById('sensorData').value;
+            const data = raw.split(',').map(Number);
+            const response = await fetch('http://localhost:8000/api/v1/predict/soil', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ farmer_id: 1, sensor_data: data, paksha: 'waxing' })
+            });
+            const res = await response.json();
+            document.getElementById('result').innerText = res.recommendation;
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>

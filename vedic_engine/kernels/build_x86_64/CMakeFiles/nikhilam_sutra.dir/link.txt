@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -shared -Wl,-soname,libnikhilam_sutra.so -o libnikhilam_sutra.so CMakeFiles/nikhilam_sutra.dir/nikhilam_sutra.cpp.o
