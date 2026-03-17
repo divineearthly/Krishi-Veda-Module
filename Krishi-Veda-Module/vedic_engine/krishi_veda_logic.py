@@ -26,7 +26,11 @@ def generate_farmer_advice(soil_data: dict, weather_data: dict, language_code: s
     Args:
         soil_data (dict): Dictionary containing soil information.
         weather_data (dict): Dictionary containing weather information.
+<<<<<<< HEAD
         language_code (str): Target language code (e.g., 'en', 'bn', 'hi').
+=======
+        language_code (str): Target language code (e.e.g., 'en', 'bn', 'hi').
+>>>>>>> 750b2b3 (Re-initialized, recreated all files, and committed latest Krishi-Veda FastAPI project files.)
 
     Returns:
         str: JSON string with translated farmer advice.
@@ -37,7 +41,16 @@ def generate_farmer_advice(soil_data: dict, weather_data: dict, language_code: s
     # Get project_id from environment variable, which will be set by Cloud Run
     project_id = os.environ.get('PROJECT_ID')
     if not project_id:
+<<<<<<< HEAD
         raise RuntimeError("PROJECT_ID environment variable not set. This is required for Google Cloud Translation API.")
+=======
+        # For local testing, use a dummy project ID or handle it gracefully
+        # In a deployed environment, this env var will be set.
+        # raise RuntimeError("PROJECT_ID environment variable not set. This is required for Google Cloud Translation API.")
+        print("Warning: PROJECT_ID environment variable not set. Using a placeholder for translation API.")
+        project_id = "your-gcp-project-id" # Placeholder for local testing
+
+>>>>>>> 750b2b3 (Re-initialized, recreated all files, and committed latest Krishi-Veda FastAPI project files.)
     # Correctly construct the parent string
     parent = f"projects/{project_id}/locations/global"
 

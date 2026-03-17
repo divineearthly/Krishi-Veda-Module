@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the current directory contents into the container at /app
+<<<<<<< HEAD
 COPY .
 
 # Install any needed Python packages specified in requirements.txt
@@ -25,6 +26,12 @@ RUN pip install --no-cache-dir \
     uvicorn \
     pydantic \
     google-cloud-translate
+=======
+COPY ./
+
+# Install any needed Python packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+>>>>>>> 750b2b3 (Re-initialized, recreated all files, and committed latest Krishi-Veda FastAPI project files.)
 
 # Build the C++ shared library inside the Docker image
 WORKDIR /app/Krishi-Veda-Module/vedic_engine/
