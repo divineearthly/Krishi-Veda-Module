@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException
-from pylantic import BaseModel
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from typing import List, Optional
 import sqlite3
 import os
@@ -8,6 +10,12 @@ import os
 from backend.core.lazy_loader import loader
 
 app = FastAPI(title='Krishi-Veda Local-First API')
+
+# Serve frontend static files
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '../frontend')
+LOCALIZATION_DIR = os.path.join(os.path.dirname(__file__), '../localization/dicts')
+app.mount('/static', StaticFiles(directory=FRONTEND_DIR), name='static')
+app.mount('/localization/dicts', StaticFiles(directory=LOCALIZATION_DIR), name='localization')
 
 # Database path configuration
 DB_PATH = os.path.join(os.path.dirname(__file__), '../krishi_veda_offline.db')
@@ -19,7 +27,7 @@ class SoilRequest(BaseModel):
 
 @app.get('/')
 async def root():
-    return {'message': 'Krishi-Veda Backend is Online', 'mode': 'Offline-First'}
+    return FileResponse(os.path.join(FRONTEND_DIR, 'index.html'))
 
 @app.get('/health')
 async def health_check():

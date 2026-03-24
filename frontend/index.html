@@ -45,7 +45,7 @@
 
         async function changeLang(code) {
             try {
-                const response = await fetch(`../localization/dicts/${code}.json`);
+                const response = await fetch(`/localization/dicts/${code}.json`);
                 const dict = await response.json();
                 document.getElementById('title').innerText = dict.welcome || 'Krishi-Veda';
                 // Simplified dynamic update logic
@@ -55,7 +55,7 @@
         async function getPrediction() {
             const raw = document.getElementById('sensorData').value;
             const data = raw.split(',').map(Number);
-            const response = await fetch('http://localhost:8000/api/v1/predict/soil', {
+            const response = await fetch('/api/v1/predict/soil', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ farmer_id: 1, sensor_data: data, paksha: 'waxing' })
