@@ -1,72 +1,617 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Krishi-Veda | Farmer Assistant</title>
-    <link rel='manifest' href='manifest.json'>
-    <style>
-        body { font-family: sans-serif; margin: 0; background: #f4f7f6; color: #333; }
-        header { background: #2e7d32; color: white; padding: 15px; text-align: center; }
-        .container { padding: 15px; max-width: 500px; margin: auto; }
-        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; background: #2e7d32; color: white; padding: 12px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        .lang-toggle { display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .lang-btn { background: #e0e0e0; padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; }
-        #result { margin-top: 15px; font-weight: bold; color: #2e7d32; }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Krishi-Veda | कृषि-वेद</title>
+  <link rel="manifest" href="/static/manifest.json"/>
+  <style>
+    :root {
+      --green: #2e7d32;
+      --light-green: #e8f5e9;
+      --amber: #f57f17;
+      --red: #c62828;
+      --bg: #f1f8e9;
+      --card: #ffffff;
+      --text: #1b2e1c;
+      --muted: #5a7a5b;
+      --radius: 16px;
+      --shadow: 0 4px 16px rgba(0,0,0,0.10);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--green) 60%, #1b5e20);
+      color: white;
+      padding: 18px 20px 14px;
+      text-align: center;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    header h1 { font-size: 1.5rem; letter-spacing: 1px; }
+    header p { font-size: 0.85rem; opacity: 0.85; margin-top: 2px; }
+
+    /* ── Language Bar ── */
+    .lang-bar {
+      display: flex; gap: 8px; justify-content: center;
+      padding: 12px 16px 6px;
+      flex-wrap: wrap;
+    }
+    .lang-btn {
+      padding: 8px 18px; border-radius: 24px; border: 2px solid var(--green);
+      background: white; color: var(--green); font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+    }
+    .lang-btn.active, .lang-btn:hover { background: var(--green); color: white; }
+
+    /* ── Main Container ── */
+    .container { max-width: 540px; margin: 0 auto; padding: 12px 14px 80px; }
+
+    /* ── Icon Cards (Big for Farmers) ── */
+    .icon-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-bottom: 14px;
+    }
+    .icon-card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 18px 12px 14px; text-align: center;
+      box-shadow: var(--shadow); cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      border: 2px solid transparent;
+    }
+    .icon-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .icon-card.active { border-color: var(--green); }
+    .icon-card .icon { font-size: 2.8rem; line-height: 1; margin-bottom: 8px; }
+    .icon-card .label { font-size: 0.95rem; font-weight: 700; color: var(--green); }
+    .icon-card .value { font-size: 0.8rem; color: var(--muted); margin-top: 4px; min-height: 16px; }
+
+    /* ── Section Cards ── */
+    .card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px;
+    }
+    .card h2 { font-size: 1.1rem; color: var(--green); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+    /* ── Location Input ── */
+    .location-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .location-row input {
+      flex: 1; min-width: 100px; padding: 12px 14px;
+      border: 2px solid #c8e6c9; border-radius: 12px;
+      font-size: 1rem; outline: none; transition: border .2s;
+    }
+    .location-row input:focus { border-color: var(--green); }
+    #btn-locate {
+      padding: 12px 14px; background: var(--green); color: white;
+      border: none; border-radius: 12px; font-size: 1.4rem; cursor: pointer;
+    }
+
+    /* ── Sensor Input ── */
+    .sensor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .sensor-field label { font-size: 0.75rem; color: var(--muted); font-weight: 600; display: block; margin-bottom: 3px; }
+    .sensor-field input {
+      width: 100%; padding: 10px; border: 2px solid #c8e6c9; border-radius: 10px;
+      font-size: 1rem; outline: none;
+    }
+    .sensor-field input:focus { border-color: var(--green); }
+
+    /* ── Main CTA Button ── */
+    #btn-plan {
+      width: 100%; padding: 18px; background: var(--green); color: white;
+      border: none; border-radius: var(--radius); font-size: 1.3rem; font-weight: 700;
+      cursor: pointer; letter-spacing: .5px; transition: background .2s;
+      box-shadow: 0 4px 12px rgba(46,125,50,0.35);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    #btn-plan:hover { background: #1b5e20; }
+    #btn-plan:disabled { background: #aaa; cursor: default; }
+
+    /* ── Results ── */
+    #result-section { display: none; }
+    .result-card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px;
+    }
+    .result-card h3 { font-size: 1rem; color: var(--green); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+    .wellness-bar-wrap { margin: 10px 0; }
+    .wellness-bar-bg { background: #e0e0e0; border-radius: 8px; height: 18px; overflow: hidden; }
+    .wellness-bar-fill { height: 100%; border-radius: 8px; transition: width 1s ease; }
+
+    .rec-list { list-style: none; padding: 0; }
+    .rec-list li {
+      padding: 10px 12px; margin-bottom: 8px;
+      background: var(--light-green); border-radius: 10px;
+      font-size: 0.92rem; line-height: 1.5;
+    }
+
+    /* ── Ahimsa Alert ── */
+    .ahimsa-alert {
+      background: #fff3e0; border: 2px solid var(--amber);
+      border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+    }
+    .ahimsa-alert h3 { color: var(--amber); font-size: 1.1rem; margin-bottom: 8px; }
+    .ahimsa-critical {
+      background: #ffebee; border-color: var(--red);
+    }
+    .ahimsa-critical h3 { color: var(--red); }
+
+    /* ── Sutra Chips ── */
+    .sutra-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .sutra-chip {
+      background: var(--light-green); border-radius: 24px;
+      padding: 6px 14px; font-size: 0.8rem; color: var(--green); font-weight: 600;
+    }
+
+    /* ── UART Section ── */
+    .uart-status { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+    .uart-dot { width: 10px; height: 10px; border-radius: 50%; background: #aaa; display: inline-block; }
+    .uart-dot.live { background: #43a047; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+    /* ── Crop Chips ── */
+    .crop-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .crop-chip {
+      background: #e8f5e9; border-radius: 20px; padding: 7px 16px;
+      font-weight: 700; font-size: 0.95rem; color: var(--green);
+    }
+
+    /* ── Loading Spinner ── */
+    .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Score Badges ── */
+    .badge {
+      display: inline-block; padding: 4px 12px; border-radius: 20px;
+      font-weight: 700; font-size: 0.9rem;
+    }
+    .badge-green { background: #c8e6c9; color: #1b5e20; }
+    .badge-amber { background: #fff3e0; color: #e65100; }
+    .badge-red   { background: #ffcdd2; color: #b71c1c; }
+
+    footer {
+      text-align: center; padding: 20px; font-size: 0.78rem; color: var(--muted);
+    }
+  </style>
 </head>
 <body>
-    <header><h1 id='title'>Krishi-Veda</h1></header>
-    <div class='container'>
-        <div class='lang-toggle'>
-            <div class='lang-btn' onclick='changeLang("en")'>English</div>
-            <div class='lang-btn' onclick='changeLang("hi")'>हिंदी</div>
-            <div class='lang-btn' onclick='changeLang("bn")'>বাংলা</div>
-        </div>
 
-        <div class='card'>
-            <h2 id='soil-form-title'>Soil Health Analysis</h2>
-            <p id='soil-desc'>Enter 8 sensor values (pH, N, P, K, etc.)</p>
-            <input type='text' id='sensorData' placeholder='e.g. 6.5, 40, 30, 35, 1.2, 0.5, 0.2, 0.1'>
-            <button onclick='getPrediction()' id='btn-predict'>Get Advice</button>
-            <div id='result'></div>
-        </div>
+<header>
+  <h1 id="hdr-title">🌾 Krishi-Veda</h1>
+  <p id="hdr-sub">Vedic Agricultural Intelligence</p>
+</header>
 
-        <div class='card'>
-            <h2 id='crop-advice-title'>Regional Advice</h2>
-            <p id='crop-desc'>Soil Type: <span id='soil-type'>Loading...</span></p>
-        </div>
+<!-- Language Bar -->
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('en')">English</button>
+  <button class="lang-btn" onclick="setLang('hi')">हिंदी</button>
+  <button class="lang-btn" onclick="setLang('bn')">বাংলা</button>
+  <button class="lang-btn" onclick="setLang('as')">অসমীয়া</button>
+</div>
+
+<div class="container">
+
+  <!-- Icon Status Grid -->
+  <div class="icon-grid">
+    <div class="icon-card" id="card-soil">
+      <div class="icon">🌱</div>
+      <div class="label" id="lbl-soil">Soil</div>
+      <div class="value" id="val-soil">—</div>
+    </div>
+    <div class="icon-card" id="card-weather">
+      <div class="icon">🌦️</div>
+      <div class="label" id="lbl-weather">Weather</div>
+      <div class="value" id="val-weather">—</div>
+    </div>
+    <div class="icon-card" id="card-crop">
+      <div class="icon">🌾</div>
+      <div class="label" id="lbl-crop">Crop Health</div>
+      <div class="value" id="val-crop">—</div>
+    </div>
+    <div class="icon-card" id="card-uart">
+      <div class="icon">📡</div>
+      <div class="label" id="lbl-sensor">Sensor</div>
+      <div class="value">
+        <span class="uart-dot" id="uart-dot"></span>
+        <span id="uart-status-text">Offline</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Location Card -->
+  <div class="card">
+    <h2>📍 <span id="lbl-location">Your Location</span></h2>
+    <div class="location-row">
+      <input type="number" id="inp-lat" placeholder="Latitude" step="0.01" value="22.57"/>
+      <input type="number" id="inp-lon" placeholder="Longitude" step="0.01" value="88.36"/>
+      <button id="btn-locate" onclick="autoLocate()" title="Use GPS">🎯</button>
+    </div>
+  </div>
+
+  <!-- Soil Type -->
+  <div class="card">
+    <h2>🪨 <span id="lbl-soil-type">Soil Type</span></h2>
+    <select id="sel-soil-type" style="width:100%;padding:12px;border-radius:10px;border:2px solid #c8e6c9;font-size:1rem;">
+      <option value="General">General / Unknown</option>
+      <option value="Alluvial">Alluvial (Gangetic Plains)</option>
+      <option value="Black">Black (Deccan)</option>
+      <option value="Red">Red / Laterite</option>
+      <option value="Desert">Desert / Arid</option>
+      <option value="Mountain">Mountain / Hill</option>
+    </select>
+  </div>
+
+  <!-- Sensor Input -->
+  <div class="card">
+    <h2>🔬 <span id="lbl-sensor-input">Sensor Readings (NPK)</span></h2>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;" id="lbl-sensor-hint">
+      Enter values or connect UART sensor (auto-fills below)
+    </p>
+    <div class="sensor-grid">
+      <div class="sensor-field">
+        <label>pH</label>
+        <input type="number" id="s-ph" value="6.5" step="0.1" min="0" max="14"/>
+      </div>
+      <div class="sensor-field">
+        <label>N (ppm)</label>
+        <input type="number" id="s-n" value="35" step="1"/>
+      </div>
+      <div class="sensor-field">
+        <label>P (ppm)</label>
+        <input type="number" id="s-p" value="28" step="1"/>
+      </div>
+      <div class="sensor-field">
+        <label>K (ppm)</label>
+        <input type="number" id="s-k" value="40" step="1"/>
+      </div>
+      <div class="sensor-field">
+        <label>Moisture %</label>
+        <input type="number" id="s-moist" value="50" step="1"/>
+      </div>
+      <div class="sensor-field">
+        <label>Organic Matter %</label>
+        <input type="number" id="s-om" value="2.0" step="0.1"/>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <button onclick="startSensorSim()" style="background:#e8f5e9;border:2px solid var(--green);color:var(--green);padding:10px 18px;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer;">
+        📡 Connect Virtual Sensor
+      </button>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <button id="btn-plan" onclick="getPlan()">
+    <span id="btn-icon">🌿</span>
+    <span id="btn-label">Get Vedic Agricultural Plan</span>
+  </button>
+
+  <!-- Results -->
+  <div id="result-section">
+
+    <!-- Ahimsa Alert -->
+    <div id="ahimsa-box" style="display:none" class="ahimsa-alert">
+      <h3 id="ahimsa-title">⚠️ Ahimsa-108 Protocol Activated</h3>
+      <p id="ahimsa-msg"></p>
     </div>
 
-    <script>
-        let translations = { "en": { "title": "Krishi-Veda", "soil-form-title": "Soil Health" } };
+    <!-- Summary -->
+    <div class="result-card">
+      <h3>📋 <span id="lbl-summary">Plan Summary</span></h3>
+      <p id="res-summary" style="line-height:1.6;font-size:0.95rem;"></p>
 
-        async function changeLang(code) {
-            try {
-                const response = await fetch(`/localization/dicts/${code}.json`);
-                const dict = await response.json();
-                document.getElementById('title').innerText = dict.welcome || 'Krishi-Veda';
-                // Simplified dynamic update logic
-            } catch (e) { console.log('Lang load failed', e); }
-        }
+      <div style="margin-top:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:0.85rem;font-weight:600;" id="lbl-wellness">Soil Wellness</span>
+          <span id="wellness-badge" class="badge badge-green"></span>
+        </div>
+        <div class="wellness-bar-wrap">
+          <div class="wellness-bar-bg">
+            <div class="wellness-bar-fill" id="wellness-bar" style="width:0%;background:var(--green);"></div>
+          </div>
+        </div>
+      </div>
 
-        async function getPrediction() {
-            const raw = document.getElementById('sensorData').value;
-            const data = raw.split(',').map(Number);
-            const response = await fetch('/api/v1/predict/soil', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ farmer_id: 1, sensor_data: data, paksha: 'waxing' })
-            });
-            const res = await response.json();
-            document.getElementById('result').innerText = res.recommendation;
-        }
+      <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:0.75rem;color:var(--muted);font-weight:600;">YIELD INDEX</div>
+          <div id="res-yield" style="font-size:1.3rem;font-weight:700;color:var(--green);"></div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;color:var(--muted);font-weight:600;">STRESS CODE</div>
+          <div id="res-stress" style="font-size:1.3rem;font-weight:700;"></div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;color:var(--muted);font-weight:600;">PAKSHA</div>
+          <div id="res-paksha" style="font-size:1rem;font-weight:700;color:var(--green);"></div>
+        </div>
+      </div>
+    </div>
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
+    <!-- Recommended Crops -->
+    <div class="result-card">
+      <h3>🌾 <span id="lbl-crops">Recommended Crops</span></h3>
+      <div class="crop-chips" id="res-crops"></div>
+    </div>
+
+    <!-- Weather + NDVI -->
+    <div class="result-card">
+      <h3>🌦️ <span id="lbl-ext-data">Field Intelligence</span></h3>
+      <div id="res-weather" style="font-size:0.9rem;line-height:1.8;"></div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="result-card">
+      <h3>📌 <span id="lbl-recs">Recommendations</span></h3>
+      <ul class="rec-list" id="res-recs"></ul>
+    </div>
+
+    <!-- Intervention -->
+    <div class="result-card" id="intervention-card" style="display:none;">
+      <h3>🐄 <span id="lbl-intervention">Organic Intervention</span></h3>
+      <div id="res-intervention" style="font-size:0.9rem;line-height:1.8;"></div>
+    </div>
+
+    <!-- 8 Sutras -->
+    <div class="result-card">
+      <h3>🕉️ <span id="lbl-sutras">8 Krishi-Sutras Applied</span></h3>
+      <div class="sutra-grid" id="res-sutras"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>🕉️ Krishi-Veda Global Engine v2.0 · Ahimsa-108 Protocol</footer>
+
+<script>
+// ── State ──
+let lang = 'en';
+let dict = {};
+let sensorSocket = null;
+
+const SUTRA_NAMES = {
+  anurupyena: 'Anurupyena 🔢',
+  nikhilam:   'Nikhilam 🔵',
+  paravartya: 'Paravartya ↔️',
+  ekadhikena: 'Ekadhikena ➕',
+  urdhva:     'Urdhva-Tiryak ✖️',
+  vilokanam:  'Vilokanam 👁️',
+  gunakasamuccaya: 'Gunakasamuccaya 🌀',
+  shunyam:    'Shunyam ⭕'
+};
+
+// ── Language ──
+async function setLang(code) {
+  lang = code;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event && event.target.classList.add('active');
+  if (code === 'en') { dict = {}; return; }
+  try {
+    const r = await fetch(`/localization/dicts/${code}.json`);
+    dict = await r.json();
+    applyDict();
+  } catch(e) { console.warn('Lang load failed', e); }
+}
+
+function t(key, fallback) {
+  return dict[key] || fallback;
+}
+
+function applyDict() {
+  if (dict.welcome) {
+    document.getElementById('hdr-title').textContent = '🌾 ' + dict.welcome;
+  }
+}
+
+// ── GPS ──
+function autoLocate() {
+  if (!navigator.geolocation) return alert('GPS not supported');
+  navigator.geolocation.getCurrentPosition(pos => {
+    document.getElementById('inp-lat').value = pos.coords.latitude.toFixed(4);
+    document.getElementById('inp-lon').value = pos.coords.longitude.toFixed(4);
+  });
+}
+
+// ── UART Sensor Simulation ──
+function startSensorSim() {
+  if (sensorSocket) { sensorSocket.close(); sensorSocket = null; }
+  const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${protocol}://${location.host}/ws/uart/simulate`);
+  sensorSocket = ws;
+
+  ws.onopen = () => {
+    document.getElementById('uart-dot').classList.add('live');
+    document.getElementById('uart-status-text').textContent = 'Live';
+  };
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'sensor_update') {
+      const d = msg.data;
+      document.getElementById('s-ph').value = d.pH.toFixed(2);
+      document.getElementById('s-n').value = d.N.toFixed(1);
+      document.getElementById('s-p').value = d.P.toFixed(1);
+      document.getElementById('s-k').value = d.K.toFixed(1);
+      document.getElementById('s-moist').value = d.moisture.toFixed(1);
+      document.getElementById('uart-status-text').textContent = `Live · N${d.N.toFixed(0)} P${d.P.toFixed(0)} K${d.K.toFixed(0)}`;
+    }
+  };
+  ws.onclose = () => {
+    document.getElementById('uart-dot').classList.remove('live');
+    document.getElementById('uart-status-text').textContent = 'Offline';
+    sensorSocket = null;
+  };
+}
+
+// ── Main: Get Vedic Plan ──
+async function getPlan() {
+  const lat = parseFloat(document.getElementById('inp-lat').value);
+  const lon = parseFloat(document.getElementById('inp-lon').value);
+  if (isNaN(lat) || isNaN(lon)) { alert('Please enter a valid location.'); return; }
+
+  const btn = document.getElementById('btn-plan');
+  const icon = document.getElementById('btn-icon');
+  const lbl = document.getElementById('btn-label');
+  btn.disabled = true;
+  icon.innerHTML = '<span class="spinner"></span>';
+  lbl.textContent = 'Calculating…';
+
+  const sensor_data = [
+    parseFloat(document.getElementById('s-ph').value)   || 6.5,
+    parseFloat(document.getElementById('s-n').value)    || 35,
+    parseFloat(document.getElementById('s-p').value)    || 28,
+    parseFloat(document.getElementById('s-k').value)    || 40,
+    parseFloat(document.getElementById('s-moist').value)|| 50,
+    parseFloat(document.getElementById('s-om').value)   || 2.0,
+    0.3, 28.0
+  ];
+
+  const body = {
+    lat, lon, sensor_data,
+    soil_type: document.getElementById('sel-soil-type').value,
+    growth_stage: 0
+  };
+
+  try {
+    const t0 = Date.now();
+    const resp = await fetch('/api/v1/plan', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    const data = await resp.json();
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
+    renderResults(data, elapsed);
+  } catch(err) {
+    alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    icon.textContent = '🌿';
+    lbl.textContent = 'Get Vedic Agricultural Plan';
+  }
+}
+
+// ── Render Results ──
+function renderResults(data, elapsed) {
+  const p = data.vedic_plan;
+  const sutras = data.sutra_computations;
+  const ext = data.external_data;
+
+  document.getElementById('result-section').style.display = 'block';
+  document.getElementById('result-section').scrollIntoView({behavior:'smooth'});
+
+  // Summary
+  document.getElementById('res-summary').textContent = p.summary + ` (⚡ ${elapsed}s)`;
+
+  // Wellness bar
+  const w = p.wellness_score;
+  const bar = document.getElementById('wellness-bar');
+  bar.style.width = w + '%';
+  bar.style.background = w > 65 ? 'var(--green)' : w > 35 ? 'var(--amber)' : 'var(--red)';
+  const badge = document.getElementById('wellness-badge');
+  badge.textContent = w.toFixed(0) + '/100';
+  badge.className = 'badge ' + (w > 65 ? 'badge-green' : w > 35 ? 'badge-amber' : 'badge-red');
+
+  // Scores
+  document.getElementById('res-yield').textContent = p.yield_index.toFixed(0) + '/100';
+  const sc = p.stress_code;
+  const stressEl = document.getElementById('res-stress');
+  stressEl.textContent = sc.toFixed(1);
+  stressEl.style.color = sc >= 108 ? 'var(--red)' : sc >= 60 ? 'var(--amber)' : 'var(--green)';
+  document.getElementById('res-paksha').textContent = p.paksha === 'waxing' ? '🌙 Shukla' : '🌑 Krishna';
+
+  // Icon cards
+  document.getElementById('val-soil').textContent = w.toFixed(0) + '/100';
+  const wdata = ext.weather;
+  document.getElementById('val-weather').textContent = wdata.temperature_c
+    ? `${wdata.temperature_c}°C · ${wdata.season || 'N/A'}`
+    : '—';
+  const ndvi = ext.crop_health_ndvi;
+  document.getElementById('val-crop').textContent = ndvi.ndvi
+    ? `NDVI ${ndvi.ndvi} · ${ndvi.crop_health}`
+    : '—';
+
+  // Ahimsa
+  const ahimsa = document.getElementById('ahimsa-box');
+  if (p.ahimsa_108_triggered) {
+    ahimsa.style.display = 'block';
+    ahimsa.className = sc > 150 ? 'ahimsa-alert ahimsa-critical' : 'ahimsa-alert';
+    document.getElementById('ahimsa-title').textContent = `🚨 Ahimsa-108 Activated (Code: ${sc.toFixed(1)})`;
+    document.getElementById('ahimsa-msg').textContent =
+      'Soil stress exceeds threshold 108. Chemical inputs halted. Organic protocol prescribed.';
+  } else {
+    ahimsa.style.display = 'none';
+  }
+
+  // Crops
+  const cropsEl = document.getElementById('res-crops');
+  cropsEl.innerHTML = (p.primary_crops || []).map(c =>
+    `<span class="crop-chip">🌱 ${c}</span>`
+  ).join('');
+
+  // Weather + NDVI
+  document.getElementById('res-weather').innerHTML = `
+    <strong>🌡️ Temperature:</strong> ${wdata.temperature_c || '—'}°C<br>
+    <strong>💧 Monthly Rainfall:</strong> ${wdata.rainfall_mm_monthly || '—'} mm<br>
+    <strong>💦 Humidity:</strong> ${wdata.humidity_pct || '—'}%<br>
+    <strong>🛰️ NDVI (Crop Health):</strong> ${ndvi.ndvi || '—'} — ${ndvi.crop_health || '—'}<br>
+    <strong>📡 Source:</strong> ${wdata.source} / ${ndvi.source}
+  `;
+
+  // Recommendations
+  const recEl = document.getElementById('res-recs');
+  recEl.innerHTML = (p.recommendations || []).map(r =>
+    `<li>${r}</li>`
+  ).join('');
+
+  // Intervention
+  const iv = p.intervention;
+  const ivCard = document.getElementById('intervention-card');
+  if (iv) {
+    ivCard.style.display = 'block';
+    let html = `<strong>${iv.primary_intervention}</strong><br>`;
+    if (iv.application) html += `<br>📋 <em>Application:</em> ${iv.application}<br>`;
+    if (iv.preparation) html += `<br>🧪 <em>Preparation:</em> ${iv.preparation}<br>`;
+    if (iv.vedic_timing) html += `<br>🕉️ <em>Vedic Timing:</em> ${iv.vedic_timing}<br>`;
+    if (iv.expected_recovery_days) html += `<br>⏳ Recovery: ${iv.expected_recovery_days} days`;
+    if (iv.ingredients) html += `<br><br>Ingredients:<br>${iv.ingredients.map(i=>`• ${i}`).join('<br>')}`;
+    document.getElementById('res-intervention').innerHTML = html;
+  } else {
+    ivCard.style.display = 'none';
+  }
+
+  // Sutra Chips
+  const sutraEl = document.getElementById('res-sutras');
+  sutraEl.innerHTML = Object.entries(sutras).map(([key, val]) => {
+    const label = SUTRA_NAMES[key] || key;
+    const summary = getSutraSummary(key, val);
+    return `<span class="sutra-chip" title="${JSON.stringify(val)}">${label}: ${summary}</span>`;
+  }).join('');
+}
+
+function getSutraSummary(key, val) {
+  if (key === 'anurupyena') return `N×${val.npk_scale_factors?.N} P×${val.npk_scale_factors?.P}`;
+  if (key === 'nikhilam') return `Deficit ${val.npk_deficit_ppm} ppm`;
+  if (key === 'paravartya') return `${val.liming_kg_per_ha > 0 ? '+' : ''}${val.liming_kg_per_ha} kg/ha`;
+  if (key === 'ekadhikena') return `Next: ${val.next_growth_milestone}`;
+  if (key === 'urdhva') return `Yield ${val.yield_index}/100`;
+  if (key === 'vilokanam') return val.anomaly_detected ? '⚠️ Anomaly' : '✅ Normal';
+  if (key === 'gunakasamuccaya') return `${val.wellness_index}/100`;
+  if (key === 'shunyam') return val.shunyam_achieved ? '⭕ Balanced' : `Residual ${val.residual_stress}`;
+  return '';
+}
+
+// ── Service Worker ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+}
+</script>
 </body>
 </html>
