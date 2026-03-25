@@ -1,4 +1,13 @@
 fastapi
 uvicorn
-tensorflow-lite
+pydantic
 numpy
+httpx
+aiohttp
+websockets
+gunicorn
+torch
+transformers
+accelerate
+bitsandbytes
+psutil

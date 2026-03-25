@@ -21,13 +21,13 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "uvicorn backend.main:app --host 0.0.0.0 --port 5000 --reload"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "uvicorn backend.main:app --host 0.0.0.0 --port 5000 --reload --reload-dir backend --reload-dir frontend"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000

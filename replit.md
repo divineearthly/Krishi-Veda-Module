@@ -1,97 +1,110 @@
-# Krishi-Veda Global Engine v2.0
+# Krishi-Veda Global Engine v2.1 — Offline Sovereign Architecture
 
-An offline-first, hybrid intelligence platform for rural farmers in India. Combines 8 Vedic Krishi-Sutras (compiled C++ shared library), external intelligence (OpenWeather, NASA NDVI), the Ahimsa-108 Protocol, a virtual UART N-P-K sensor listener, and a farmer-friendly multi-language dashboard.
+An offline-first, hybrid intelligence platform for rural farmers in India.
+Combines 8 Vedic Krishi-Sutras (compiled C++ .so), 4-bit quantized SLM (Qwen2.5-0.5B),
+NASA Sentinel-2 NDVI, OpenWeather, Ahimsa-108 Protocol, and a virtual UART sensor listener.
 
 ## Architecture
 
 - **Backend**: FastAPI (Python) on port 5000
-- **Frontend**: Farmer-friendly PWA with big icons, served by FastAPI
-- **Database**: SQLite (`krishi_veda_offline.db`) — farmer profiles, regional data
-- **Vedic Kernels**: C++ shared library (`vedic_engine/kernels/vedic_kernels.so`)
-- **SLM Reasoning**: Rule-based engine (`backend/services/slm_reasoning_engine.py`)
-- **External Intel**: OpenWeather + NASA NDVI proxy (`backend/services/external_intel_service.py`)
-- **UART Listener**: WebSocket sensor data receiver (`backend/core/uart_listener.py`)
+- **Frontend**: Farmer-friendly PWA — Hindi, Bengali, Assamese, English — big icon UI
+- **Database**: SQLite (`krishi_veda_offline.db`) — farmer profiles, regional data, weather/NDVI cache
+- **Vedic Kernels**: C++ `.so` compiled with `-Os` for size (`vedic_engine/kernels/vedic_kernels.so`)
+- **SLM**: Qwen2.5-0.5B-Instruct loaded 4-bit quantized via bitsandbytes (background lazy load)
+- **Sync Manager**: 10km-radius data fetch + SQLite cache (`backend/core/sync_manager.py`)
+- **UART Listener**: WebSocket real-time N-P-K sensor receiver
 
 ## Project Layout
 
 ```
 backend/
-  main.py                          - FastAPI entry point, all API routes
+  main.py                          - All API routes + startup
   core/
-    lazy_loader.py                 - Memory-efficient model loader
-    vedic_kernels_bridge.py        - ctypes bridge to vedic_kernels.so
+    vedic_kernels_bridge.py        - ctypes → vedic_kernels.so (8 sutras)
+    slm_engine.py                  - 4-bit SLM, Vedic-grounded, Ahimsa-108 enforced
+    sync_manager.py                - NASA Sentinel-2 + OpenWeather offline cache
     uart_listener.py               - Virtual UART WebSocket listener
+    lazy_loader.py                 - TFLite model lazy loader
   services/
-    soil_health.py                 - Legacy TFLite soil prediction
-    slm_reasoning_engine.py        - SLM brain + Ahimsa-108 Protocol
-    external_intel_service.py      - OpenWeather + NASA NDVI
-    vedic_sutra_service.py         - (placeholder)
+    slm_reasoning_engine.py        - Rule-based Vedic plan (fast, always-on)
+    external_intel_service.py      - Live weather + NDVI (used when cache is cold)
 
 vedic_engine/kernels/
-  vedic_kernels.cpp                - 8 Krishi-Sutras in C++
-  vedic_kernels.so                 - Compiled shared library (g++ -O3 -fPIC -shared)
+  vedic_kernels.cpp                - 8 Krishi-Sutras in C++ (-Os optimized)
+  vedic_kernels.so                 - Compiled host binary
+  vedic_kernels_armv7.so           - Cross-compiled for Raspberry Pi (via Makefile)
+  Makefile                         - Build rules: host (-Os), arm (-Os -march=armv7-a), arm6
 
 frontend/
-  index.html                       - Farmer dashboard (Hindi/Bengali/Assamese/English)
-  manifest.json                    - PWA manifest
-  sw.js                            - Service worker
+  index.html                       - Farmer dashboard (4 languages, big icons)
 
 localization/dicts/
-  hi.json                          - Hindi
-  bn.json                          - Bengali
-  as.json                          - Assamese (new)
-  ta.json                          - Tamil
+  hi.json  bn.json  as.json  ta.json   - Hindi, Bengali, Assamese, Tamil
 
-krishi_veda_offline.db             - SQLite database
+krishi_veda_offline.db             - SQLite: farmers, regional_data, weather_cache, ndvi_cache, sync_log
 ```
 
-## The 8 Krishi-Sutras
+## The 8 Krishi-Sutras (C++ → Python bridge)
 
-| # | Sutra | Agricultural Function |
-|---|-------|-----------------------|
-| 1 | Anurupyena | Proportional NPK scaling |
-| 2 | Nikhilam | Complement-based deficit computation |
-| 3 | Paravartya | pH inversion → liming recommendation |
-| 4 | Ekadhikena | Next growth stage milestone |
-| 5 | Urdhva-Tiryak | Cross-multiply yield matrix |
-| 6 | Vilokanam | Sensor anomaly detection |
-| 7 | Gunakasamuccaya | Geometric wellness index |
-| 8 | Shunyam | Residual stress balance |
+| Sutra | C Function | Agricultural Role |
+|-------|-----------|-------------------|
+| Anurupyena | `anurupyena_scale()` | Proportional NPK scaling |
+| Nikhilam | `nikhilam_deficit()` | Complement-based NPK deficit |
+| Paravartya | `paravartya_ph_inversion()` | pH→liming recommendation |
+| Ekadhikena | `ekadhikena_next_stage()` | Growth milestone projection |
+| Urdhva-Tiryak | `urdhva_yield_score()` | Cross-multiply yield matrix |
+| Vilokanam | `vilokanam_anomaly()` | Sensor anomaly detection |
+| Gunakasamuccaya | `gunakasamuccaya_wellness()` | Geometric wellness index |
+| Shunyam | `shunyam_stress_balance()` | Residual stress after amendment |
 
 ## Ahimsa-108 Protocol
 
-When `stress_code ≥ 75` (sacred 108 normalized to soil scale):
-- Chemical inputs are halted
-- Panchgavya (cow-based organic amendment) is prescribed
-- Nadep/Vermicomposting recommended for severe cases
+Enforced at TWO levels:
+1. **Rule-based engine** (`slm_reasoning_engine.py`): instant fallback
+2. **SLM engine** (`slm_engine.py`): Vedic kernels queried FIRST, result injected as ground truth into the SLM prompt
+
+When `stress_code ≥ 75` → Panchgavya + Nadep composting prescribed.
+
+## Compiler Notes
+
+Host build: `g++ -Os -fPIC -shared -std=c++14 -lm`
+ARM build:   `arm-linux-gnueabihf-g++ -Os -march=armv7-a -mfpu=neon -mfloat-abi=hard -fPIC -shared`
+(ARM cross-compilation requires `apt install gcc-arm-linux-gnueabihf`)
 
 ## Key API Endpoints
 
-- `POST /api/v1/plan` — Full Vedic agricultural plan from location + sensor data
-- `GET /api/v1/weather?lat=&lon=` — Weather intelligence (OpenWeather / heuristic fallback)
-- `GET /api/v1/ndvi?lat=&lon=` — NASA NDVI crop health index
-- `GET /api/v1/crops/{state_code}` — Regional crop data from SQLite
-- `WS /ws/uart` — Real UART N-P-K sensor data (JSON or CSV frames)
-- `WS /ws/uart/simulate` — Virtual sensor stream for demos
-- `GET /api/v1/uart/latest` — Latest sensor reading
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/plan` | Full Vedic plan (add `"use_slm":true` for SLM advice) |
+| POST | `/api/v1/sync` | Cache NASA + OpenWeather for 10km radius |
+| POST | `/api/v1/slm/advice` | SLM-only advice (Vedic-grounded) |
+| GET | `/api/v1/slm/status` | SLM load status |
+| GET | `/api/v1/weather?lat=&lon=` | Weather (cache → live → heuristic) |
+| GET | `/api/v1/ndvi?lat=&lon=` | NDVI crop health |
+| WS | `/ws/uart` | Real N-P-K UART frames (JSON or CSV) |
+| WS | `/ws/uart/simulate` | Virtual sensor stream |
+| GET | `/api/v1/uart/latest` | Latest sensor reading |
 
 ## Environment Variables
 
-- `OPENWEATHER_API_KEY` — OpenWeather API key (optional; heuristic fallback used if missing)
-- `NASA_EARTHDATA_TOKEN` — NASA EarthData token (optional; synthetic NDVI if missing)
+| Variable | Description |
+|----------|-------------|
+| `OPENWEATHER_API_KEY` | OpenWeather API (heuristic fallback if missing) |
+| `NASA_EARTHDATA_TOKEN` | NASA EarthData token (synthetic NDVI if missing) |
+| `SLM_CACHE_DIR` | Override model cache dir (default: `~/.cache/krishi_veda_slm`) |
 
-## Running
+## Run
 
-```
-uvicorn backend.main:app --host 0.0.0.0 --port 5000 --reload
-```
-
-## Recompile Vedic Kernels
-
-```
-g++ -O3 -fPIC -shared -std=c++14 -o vedic_engine/kernels/vedic_kernels.so vedic_engine/kernels/vedic_kernels.cpp -lm
+```bash
+uvicorn backend.main:app --host 0.0.0.0 --port 5000 --reload \
+  --reload-dir backend --reload-dir frontend
 ```
 
-## Deployment
+## Recompile Kernels
 
-Uses gunicorn: `gunicorn --bind=0.0.0.0:5000 --reuse-port backend.main:app`
+```bash
+cd vedic_engine/kernels
+make host          # x86_64 with -Os
+make arm           # ARMv7-a (Raspberry Pi 2/3) — needs cross-compiler
+make arm6          # ARMv6 (Raspberry Pi Zero)
+```

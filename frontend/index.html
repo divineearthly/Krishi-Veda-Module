@@ -286,6 +286,21 @@
     </div>
   </div>
 
+  <!-- Offline Sync + SLM toggle -->
+  <div class="card" style="padding:14px 16px;">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <button onclick="syncNow()" id="btn-sync"
+        style="flex:1;background:#e8f5e9;border:2px solid var(--green);color:var(--green);padding:12px;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer;">
+        📥 Sync Offline Cache (10km)
+      </button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:var(--muted);cursor:pointer;">
+        <input type="checkbox" id="chk-slm" style="width:18px;height:18px;cursor:pointer;"/>
+        🧠 Use SLM
+      </label>
+    </div>
+    <p id="sync-status" style="font-size:0.78rem;color:var(--muted);margin-top:8px;min-height:14px;"></p>
+  </div>
+
   <!-- CTA -->
   <button id="btn-plan" onclick="getPlan()">
     <span id="btn-icon">🌿</span>
@@ -449,54 +464,8 @@ function startSensorSim() {
   };
 }
 
-// ── Main: Get Vedic Plan ──
-async function getPlan() {
-  const lat = parseFloat(document.getElementById('inp-lat').value);
-  const lon = parseFloat(document.getElementById('inp-lon').value);
-  if (isNaN(lat) || isNaN(lon)) { alert('Please enter a valid location.'); return; }
-
-  const btn = document.getElementById('btn-plan');
-  const icon = document.getElementById('btn-icon');
-  const lbl = document.getElementById('btn-label');
-  btn.disabled = true;
-  icon.innerHTML = '<span class="spinner"></span>';
-  lbl.textContent = 'Calculating…';
-
-  const sensor_data = [
-    parseFloat(document.getElementById('s-ph').value)   || 6.5,
-    parseFloat(document.getElementById('s-n').value)    || 35,
-    parseFloat(document.getElementById('s-p').value)    || 28,
-    parseFloat(document.getElementById('s-k').value)    || 40,
-    parseFloat(document.getElementById('s-moist').value)|| 50,
-    parseFloat(document.getElementById('s-om').value)   || 2.0,
-    0.3, 28.0
-  ];
-
-  const body = {
-    lat, lon, sensor_data,
-    soil_type: document.getElementById('sel-soil-type').value,
-    growth_stage: 0
-  };
-
-  try {
-    const t0 = Date.now();
-    const resp = await fetch('/api/v1/plan', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(body)
-    });
-    if (!resp.ok) throw new Error(await resp.text());
-    const data = await resp.json();
-    const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
-    renderResults(data, elapsed);
-  } catch(err) {
-    alert('Error: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    icon.textContent = '🌿';
-    lbl.textContent = 'Get Vedic Agricultural Plan';
-  }
-}
+// ── Main: Get Vedic Plan (defined fully below after syncNow) ──
+// getPlan is defined later in the script to include SLM + sync support
 
 // ── Render Results ──
 function renderResults(data, elapsed) {
@@ -606,6 +575,114 @@ function getSutraSummary(key, val) {
   if (key === 'gunakasamuccaya') return `${val.wellness_index}/100`;
   if (key === 'shunyam') return val.shunyam_achieved ? '⭕ Balanced' : `Residual ${val.residual_stress}`;
   return '';
+}
+
+// ── Offline Sync ──
+async function syncNow() {
+  const lat = parseFloat(document.getElementById('inp-lat').value);
+  const lon = parseFloat(document.getElementById('inp-lon').value);
+  if (isNaN(lat) || isNaN(lon)) { alert('Enter location first.'); return; }
+  const btn = document.getElementById('btn-sync');
+  const status = document.getElementById('sync-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Syncing…';
+  status.textContent = 'Fetching NASA Sentinel-2 + OpenWeather for 10km radius…';
+  try {
+    const r = await fetch('/api/v1/sync', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({lat, lon, force: false})
+    });
+    const d = await r.json();
+    const meta = d.result?.sync_meta || {};
+    const sources = (meta.sources || []).join(', ');
+    status.textContent = `✅ Cached! Sources: ${sources}`;
+  } catch(e) {
+    status.textContent = '❌ Sync failed: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📥 Sync Offline Cache (10km)';
+  }
+}
+
+// ── Main: Get Vedic Plan (with SLM + sync support) ──
+async function getPlan() {
+  const lat = parseFloat(document.getElementById('inp-lat').value);
+  const lon = parseFloat(document.getElementById('inp-lon').value);
+  if (isNaN(lat) || isNaN(lon)) { alert('Please enter a valid location.'); return; }
+
+  const btn = document.getElementById('btn-plan');
+  const icon = document.getElementById('btn-icon');
+  const lbl = document.getElementById('btn-label');
+  btn.disabled = true;
+  icon.innerHTML = '<span class="spinner"></span>';
+  lbl.textContent = 'Calculating…';
+
+  const useSLM = document.getElementById('chk-slm')?.checked || false;
+  const sensor_data = [
+    parseFloat(document.getElementById('s-ph').value)   || 6.5,
+    parseFloat(document.getElementById('s-n').value)    || 35,
+    parseFloat(document.getElementById('s-p').value)    || 28,
+    parseFloat(document.getElementById('s-k').value)    || 40,
+    parseFloat(document.getElementById('s-moist').value)|| 50,
+    parseFloat(document.getElementById('s-om').value)   || 2.0,
+    0.3, 28.0
+  ];
+
+  const body = {
+    lat, lon, sensor_data,
+    soil_type: document.getElementById('sel-soil-type').value,
+    growth_stage: 0,
+    use_slm: useSLM,
+  };
+
+  try {
+    const t0 = Date.now();
+    const resp = await fetch('/api/v1/plan', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    const data = await resp.json();
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
+    renderResults(data, elapsed);
+
+    // Show SLM advice if present
+    if (data.slm_advice) {
+      renderSLMAdvice(data.slm_advice);
+    }
+  } catch(err) {
+    alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    icon.textContent = '🌿';
+    lbl.textContent = 'Get Vedic Agricultural Plan';
+  }
+}
+
+function renderSLMAdvice(slm) {
+  let box = document.getElementById('slm-advice-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'slm-advice-box';
+    box.className = 'result-card';
+    document.getElementById('result-section').prepend(box);
+  }
+  const engine = slm.engine === 'slm_4bit_quantized'
+    ? `🧠 ${slm.model_used} (4-bit quantized, ${slm.inference_seconds}s)`
+    : `🔧 ${slm.model_used}`;
+  const ahimsa = slm.ahimsa_triggered
+    ? '<span style="color:var(--red);font-weight:700;">⚠️ Ahimsa-108 Active</span>'
+    : '<span style="color:var(--green);">✅ Soil OK</span>';
+  const vg = slm.vedic_grounding || {};
+  box.innerHTML = `
+    <h3>🧠 SLM Advice <small style="font-weight:400;font-size:0.75rem;">${engine}</small></h3>
+    <div style="background:#f1f8e9;border-radius:10px;padding:12px;font-size:0.9rem;line-height:1.7;white-space:pre-wrap;">${slm.advice}</div>
+    <div style="margin-top:10px;font-size:0.8rem;color:var(--muted);">
+      ${ahimsa} · Vedic Wellness: ${vg.wellness || '—'}/100 · Stress: ${vg.stress_code || '—'}
+    </div>
+  `;
 }
 
 // ── Service Worker ──
