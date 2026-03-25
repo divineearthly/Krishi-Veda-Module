@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, WebSocket, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 from typing import List, Optional
 import sqlite3
@@ -60,6 +60,23 @@ class SyncRequest(BaseModel):
 @app.get("/")
 async def root():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+
+@app.get("/sw.js")
+async def service_worker():
+    """
+    Serve the Service Worker from the root path so it controls the entire
+    origin (not just /static/). The Service-Worker-Allowed header explicitly
+    grants root scope to a file served from /sw.js.
+    """
+    sw_path = os.path.join(FRONTEND_DIR, "sw.js")
+    with open(sw_path, "r") as f:
+        content = f.read()
+    return Response(
+        content=content,
+        media_type="application/javascript",
+        headers={"Service-Worker-Allowed": "/"},
+    )
 
 
 # ── Health + SLM Status ──────────────────────────────────────────────────────

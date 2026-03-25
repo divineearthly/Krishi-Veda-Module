@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Krishi-Veda | कृषि-वेद</title>
   <link rel="manifest" href="/static/manifest.json"/>
+
+  <!-- PWA modules — load before main script -->
+  <script src="/static/idb.js"></script>
+  <script src="/static/vedic_wasm.js"></script>
+  <script src="/static/webllm_adapter.js"></script>
+
   <style>
     :root {
       --green: #2e7d32;
@@ -24,20 +30,36 @@
     /* ── Header ── */
     header {
       background: linear-gradient(135deg, var(--green) 60%, #1b5e20);
-      color: white;
-      padding: 18px 20px 14px;
-      text-align: center;
+      color: white; padding: 18px 20px 14px; text-align: center;
       position: sticky; top: 0; z-index: 100;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
     header h1 { font-size: 1.5rem; letter-spacing: 1px; }
     header p { font-size: 0.85rem; opacity: 0.85; margin-top: 2px; }
 
+    /* ── Offline banner ── */
+    #offline-banner {
+      display: none; background: #e65100; color: white;
+      text-align: center; padding: 6px; font-size: 0.82rem; font-weight: 700;
+    }
+
+    /* ── Engine badge row ── */
+    .engine-badges {
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+      padding: 8px 16px 2px;
+    }
+    .eng-badge {
+      font-size: 0.72rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 20px; border: 1.5px solid; cursor: default;
+    }
+    .eng-badge.ok   { border-color: var(--green); color: var(--green); background: #e8f5e9; }
+    .eng-badge.warn { border-color: var(--amber); color: var(--amber); background: #fff3e0; }
+    .eng-badge.load { border-color: #90a4ae;      color: #546e7a;      background: #f5f5f5; }
+
     /* ── Language Bar ── */
     .lang-bar {
       display: flex; gap: 8px; justify-content: center;
-      padding: 12px 16px 6px;
-      flex-wrap: wrap;
+      padding: 10px 16px 4px; flex-wrap: wrap;
     }
     .lang-btn {
       padding: 8px 18px; border-radius: 24px; border: 2px solid var(--green);
@@ -49,11 +71,8 @@
     /* ── Main Container ── */
     .container { max-width: 540px; margin: 0 auto; padding: 12px 14px 80px; }
 
-    /* ── Icon Cards (Big for Farmers) ── */
-    .icon-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-      margin-bottom: 14px;
-    }
+    /* ── Icon Cards ── */
+    .icon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
     .icon-card {
       background: var(--card); border-radius: var(--radius);
       padding: 18px 12px 14px; text-align: center;
@@ -68,10 +87,7 @@
     .icon-card .value { font-size: 0.8rem; color: var(--muted); margin-top: 4px; min-height: 16px; }
 
     /* ── Section Cards ── */
-    .card {
-      background: var(--card); border-radius: var(--radius);
-      padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px;
-    }
+    .card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px; }
     .card h2 { font-size: 1.1rem; color: var(--green); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
     /* ── Location Input ── */
@@ -82,18 +98,12 @@
       font-size: 1rem; outline: none; transition: border .2s;
     }
     .location-row input:focus { border-color: var(--green); }
-    #btn-locate {
-      padding: 12px 14px; background: var(--green); color: white;
-      border: none; border-radius: 12px; font-size: 1.4rem; cursor: pointer;
-    }
+    #btn-locate { padding: 12px 14px; background: var(--green); color: white; border: none; border-radius: 12px; font-size: 1.4rem; cursor: pointer; }
 
     /* ── Sensor Input ── */
     .sensor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .sensor-field label { font-size: 0.75rem; color: var(--muted); font-weight: 600; display: block; margin-bottom: 3px; }
-    .sensor-field input {
-      width: 100%; padding: 10px; border: 2px solid #c8e6c9; border-radius: 10px;
-      font-size: 1rem; outline: none;
-    }
+    .sensor-field input { width: 100%; padding: 10px; border: 2px solid #c8e6c9; border-radius: 10px; font-size: 1rem; outline: none; }
     .sensor-field input:focus { border-color: var(--green); }
 
     /* ── Main CTA Button ── */
@@ -109,10 +119,7 @@
 
     /* ── Results ── */
     #result-section { display: none; }
-    .result-card {
-      background: var(--card); border-radius: var(--radius);
-      padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px;
-    }
+    .result-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px; }
     .result-card h3 { font-size: 1rem; color: var(--green); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
 
     .wellness-bar-wrap { margin: 10px 0; }
@@ -120,29 +127,17 @@
     .wellness-bar-fill { height: 100%; border-radius: 8px; transition: width 1s ease; }
 
     .rec-list { list-style: none; padding: 0; }
-    .rec-list li {
-      padding: 10px 12px; margin-bottom: 8px;
-      background: var(--light-green); border-radius: 10px;
-      font-size: 0.92rem; line-height: 1.5;
-    }
+    .rec-list li { padding: 10px 12px; margin-bottom: 8px; background: var(--light-green); border-radius: 10px; font-size: 0.92rem; line-height: 1.5; }
 
     /* ── Ahimsa Alert ── */
-    .ahimsa-alert {
-      background: #fff3e0; border: 2px solid var(--amber);
-      border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
-    }
+    .ahimsa-alert { background: #fff3e0; border: 2px solid var(--amber); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
     .ahimsa-alert h3 { color: var(--amber); font-size: 1.1rem; margin-bottom: 8px; }
-    .ahimsa-critical {
-      background: #ffebee; border-color: var(--red);
-    }
+    .ahimsa-critical { background: #ffebee; border-color: var(--red); }
     .ahimsa-critical h3 { color: var(--red); }
 
     /* ── Sutra Chips ── */
     .sutra-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-    .sutra-chip {
-      background: var(--light-green); border-radius: 24px;
-      padding: 6px 14px; font-size: 0.8rem; color: var(--green); font-weight: 600;
-    }
+    .sutra-chip { background: var(--light-green); border-radius: 24px; padding: 6px 14px; font-size: 0.8rem; color: var(--green); font-weight: 600; }
 
     /* ── UART Section ── */
     .uart-status { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
@@ -152,40 +147,44 @@
 
     /* ── Crop Chips ── */
     .crop-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-    .crop-chip {
-      background: #e8f5e9; border-radius: 20px; padding: 7px 16px;
-      font-weight: 700; font-size: 0.95rem; color: var(--green);
-    }
+    .crop-chip { background: #e8f5e9; border-radius: 20px; padding: 7px 16px; font-weight: 700; font-size: 0.95rem; color: var(--green); }
 
     /* ── Loading Spinner ── */
-    .spinner {
-      display: inline-block; width: 20px; height: 20px;
-      border: 3px solid rgba(255,255,255,0.3);
-      border-top-color: white; border-radius: 50%;
-      animation: spin .7s linear infinite;
-    }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Score Badges ── */
-    .badge {
-      display: inline-block; padding: 4px 12px; border-radius: 20px;
-      font-weight: 700; font-size: 0.9rem;
-    }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; }
     .badge-green { background: #c8e6c9; color: #1b5e20; }
     .badge-amber { background: #fff3e0; color: #e65100; }
     .badge-red   { background: #ffcdd2; color: #b71c1c; }
 
-    footer {
-      text-align: center; padding: 20px; font-size: 0.78rem; color: var(--muted);
-    }
+    /* ── WebLLM progress bar ── */
+    #webllm-progress-wrap { display: none; margin-top: 10px; }
+    .webllm-bar-bg { background: #e0e0e0; border-radius: 6px; height: 10px; overflow: hidden; margin-bottom: 4px; }
+    .webllm-bar-fill { height: 100%; background: var(--green); border-radius: 6px; transition: width .3s; width: 0%; }
+    #webllm-progress-text { font-size: 0.75rem; color: var(--muted); }
+
+    footer { text-align: center; padding: 20px; font-size: 0.78rem; color: var(--muted); }
   </style>
 </head>
 <body>
+
+<!-- Offline Banner -->
+<div id="offline-banner">📵 You are offline — showing cached data</div>
 
 <header>
   <h1 id="hdr-title">🌾 Krishi-Veda</h1>
   <p id="hdr-sub">Vedic Agricultural Intelligence</p>
 </header>
+
+<!-- Engine Badges -->
+<div class="engine-badges">
+  <span class="eng-badge load" id="badge-wasm">⚙️ Kernels…</span>
+  <span class="eng-badge load" id="badge-idb">💾 IDB…</span>
+  <span class="eng-badge warn" id="badge-webllm">🧠 WebLLM: Off</span>
+  <span class="eng-badge load" id="badge-sw">📡 SW…</span>
+</div>
 
 <!-- Language Bar -->
 <div class="lang-bar">
@@ -228,7 +227,7 @@
   <div class="card">
     <h2>📍 <span id="lbl-location">Your Location</span></h2>
     <div class="location-row">
-      <input type="number" id="inp-lat" placeholder="Latitude" step="0.01" value="22.57"/>
+      <input type="number" id="inp-lat" placeholder="Latitude"  step="0.01" value="22.57"/>
       <input type="number" id="inp-lon" placeholder="Longitude" step="0.01" value="88.36"/>
       <button id="btn-locate" onclick="autoLocate()" title="Use GPS">🎯</button>
     </div>
@@ -254,30 +253,12 @@
       Enter values or connect UART sensor (auto-fills below)
     </p>
     <div class="sensor-grid">
-      <div class="sensor-field">
-        <label>pH</label>
-        <input type="number" id="s-ph" value="6.5" step="0.1" min="0" max="14"/>
-      </div>
-      <div class="sensor-field">
-        <label>N (ppm)</label>
-        <input type="number" id="s-n" value="35" step="1"/>
-      </div>
-      <div class="sensor-field">
-        <label>P (ppm)</label>
-        <input type="number" id="s-p" value="28" step="1"/>
-      </div>
-      <div class="sensor-field">
-        <label>K (ppm)</label>
-        <input type="number" id="s-k" value="40" step="1"/>
-      </div>
-      <div class="sensor-field">
-        <label>Moisture %</label>
-        <input type="number" id="s-moist" value="50" step="1"/>
-      </div>
-      <div class="sensor-field">
-        <label>Organic Matter %</label>
-        <input type="number" id="s-om" value="2.0" step="0.1"/>
-      </div>
+      <div class="sensor-field"><label>pH</label>              <input type="number" id="s-ph"    value="6.5"  step="0.1" min="0" max="14"/></div>
+      <div class="sensor-field"><label>N (ppm)</label>         <input type="number" id="s-n"     value="35"   step="1"/></div>
+      <div class="sensor-field"><label>P (ppm)</label>         <input type="number" id="s-p"     value="28"   step="1"/></div>
+      <div class="sensor-field"><label>K (ppm)</label>         <input type="number" id="s-k"     value="40"   step="1"/></div>
+      <div class="sensor-field"><label>Moisture %</label>      <input type="number" id="s-moist" value="50"   step="1"/></div>
+      <div class="sensor-field"><label>Organic Matter %</label><input type="number" id="s-om"    value="2.0"  step="0.1"/></div>
     </div>
     <div style="margin-top:12px;">
       <button onclick="startSensorSim()" style="background:#e8f5e9;border:2px solid var(--green);color:var(--green);padding:10px 18px;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer;">
@@ -286,19 +267,40 @@
     </div>
   </div>
 
-  <!-- Offline Sync + SLM toggle -->
+  <!-- Offline Sync + SLM + WebLLM toggle -->
   <div class="card" style="padding:14px 16px;">
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <button onclick="syncNow()" id="btn-sync"
         style="flex:1;background:#e8f5e9;border:2px solid var(--green);color:var(--green);padding:12px;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer;">
-        📥 Sync Offline Cache (10km)
+        📥 Sync 7-Day Data (10km)
       </button>
       <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:var(--muted);cursor:pointer;">
         <input type="checkbox" id="chk-slm" style="width:18px;height:18px;cursor:pointer;"/>
-        🧠 Use SLM
+        🧠 Server SLM
       </label>
     </div>
     <p id="sync-status" style="font-size:0.78rem;color:var(--muted);margin-top:8px;min-height:14px;"></p>
+
+    <!-- WebLLM Section -->
+    <div style="margin-top:12px;border-top:1px solid #e0e0e0;padding-top:12px;">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button onclick="loadWebLLM()" id="btn-webllm"
+          style="flex:1;background:#fff3e0;border:2px solid var(--amber);color:#e65100;padding:10px;border-radius:10px;font-size:0.88rem;font-weight:700;cursor:pointer;">
+          🧠 Load Browser LLM (Qwen2.5-0.5B · ~320MB)
+        </button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:var(--muted);cursor:pointer;">
+          <input type="checkbox" id="chk-webllm" disabled style="width:18px;height:18px;cursor:pointer;"/>
+          Use WebLLM
+        </label>
+      </div>
+      <p id="webllm-status" style="font-size:0.78rem;color:var(--muted);margin-top:6px;">
+        Requires Chrome 113+ with WebGPU. Downloads ~320MB on first use, then cached locally.
+      </p>
+      <div id="webllm-progress-wrap">
+        <div class="webllm-bar-bg"><div class="webllm-bar-fill" id="webllm-bar"></div></div>
+        <p id="webllm-progress-text">Loading…</p>
+      </div>
+    </div>
   </div>
 
   <!-- CTA -->
@@ -307,20 +309,21 @@
     <span id="btn-label">Get Vedic Agricultural Plan</span>
   </button>
 
+  <!-- WASM Local Result card (shown when offline or user asks for it) -->
+  <div id="wasm-result-card" class="result-card" style="display:none;margin-top:14px;">
+    <h3>⚙️ Browser Vedic Kernels (offline)</h3>
+    <div id="wasm-result-body" style="font-size:0.85rem;line-height:1.8;color:var(--text);"></div>
+  </div>
+
   <!-- Results -->
   <div id="result-section">
-
-    <!-- Ahimsa Alert -->
     <div id="ahimsa-box" style="display:none" class="ahimsa-alert">
       <h3 id="ahimsa-title">⚠️ Ahimsa-108 Protocol Activated</h3>
       <p id="ahimsa-msg"></p>
     </div>
-
-    <!-- Summary -->
     <div class="result-card">
       <h3>📋 <span id="lbl-summary">Plan Summary</span></h3>
       <p id="res-summary" style="line-height:1.6;font-size:0.95rem;"></p>
-
       <div style="margin-top:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <span style="font-size:0.85rem;font-weight:600;" id="lbl-wellness">Soil Wellness</span>
@@ -332,7 +335,6 @@
           </div>
         </div>
       </div>
-
       <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;">
         <div>
           <div style="font-size:0.75rem;color:var(--muted);font-weight:600;">YIELD INDEX</div>
@@ -348,61 +350,79 @@
         </div>
       </div>
     </div>
-
-    <!-- Recommended Crops -->
     <div class="result-card">
       <h3>🌾 <span id="lbl-crops">Recommended Crops</span></h3>
       <div class="crop-chips" id="res-crops"></div>
     </div>
-
-    <!-- Weather + NDVI -->
     <div class="result-card">
       <h3>🌦️ <span id="lbl-ext-data">Field Intelligence</span></h3>
       <div id="res-weather" style="font-size:0.9rem;line-height:1.8;"></div>
     </div>
-
-    <!-- Recommendations -->
     <div class="result-card">
       <h3>📌 <span id="lbl-recs">Recommendations</span></h3>
       <ul class="rec-list" id="res-recs"></ul>
     </div>
-
-    <!-- Intervention -->
     <div class="result-card" id="intervention-card" style="display:none;">
       <h3>🐄 <span id="lbl-intervention">Organic Intervention</span></h3>
       <div id="res-intervention" style="font-size:0.9rem;line-height:1.8;"></div>
     </div>
-
-    <!-- 8 Sutras -->
     <div class="result-card">
       <h3>🕉️ <span id="lbl-sutras">8 Krishi-Sutras Applied</span></h3>
       <div class="sutra-grid" id="res-sutras"></div>
     </div>
-
   </div>
 
 </div>
 
-<footer>🕉️ Krishi-Veda Global Engine v2.0 · Ahimsa-108 Protocol</footer>
+<footer>🕉️ Krishi-Veda Global Engine v2.1 · Ahimsa-108 · Offline-First PWA</footer>
 
 <script>
-// ── State ──
+// ── State ──────────────────────────────────────────────────────────────────
 let lang = 'en';
 let dict = {};
 let sensorSocket = null;
 
 const SUTRA_NAMES = {
-  anurupyena: 'Anurupyena 🔢',
-  nikhilam:   'Nikhilam 🔵',
-  paravartya: 'Paravartya ↔️',
-  ekadhikena: 'Ekadhikena ➕',
-  urdhva:     'Urdhva-Tiryak ✖️',
-  vilokanam:  'Vilokanam 👁️',
-  gunakasamuccaya: 'Gunakasamuccaya 🌀',
-  shunyam:    'Shunyam ⭕'
+  anurupyena: 'Anurupyena 🔢', nikhilam: 'Nikhilam 🔵',
+  paravartya: 'Paravartya ↔️', ekadhikena: 'Ekadhikena ➕',
+  urdhva: 'Urdhva-Tiryak ✖️', vilokanam: 'Vilokanam 👁️',
+  gunakasamuccaya: 'Gunakasamuccaya 🌀', shunyam: 'Shunyam ⭕'
 };
 
-// ── Language ──
+// ── Online / Offline ───────────────────────────────────────────────────────
+function updateOnlineStatus() {
+  document.getElementById('offline-banner').style.display =
+    navigator.onLine ? 'none' : 'block';
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// ── Engine badges ──────────────────────────────────────────────────────────
+function setBadge(id, state, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = `eng-badge ${state}`;
+  el.textContent = text;
+}
+
+// WASM readiness
+VedicWASM.ready.then(() => {
+  const isWasm = VedicWASM.isWasm();
+  setBadge('badge-wasm', 'ok', isWasm ? '⚙️ WASM ✓' : '⚙️ JS Kernels ✓');
+});
+
+// IDB readiness
+(async () => {
+  try {
+    const age = await KrishiIDB.syncAgeLabel();
+    setBadge('badge-idb', 'ok', `💾 IDB · ${age}`);
+  } catch {
+    setBadge('badge-idb', 'warn', '💾 IDB error');
+  }
+})();
+
+// ── Language ───────────────────────────────────────────────────────────────
 async function setLang(code) {
   lang = code;
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
@@ -415,17 +435,13 @@ async function setLang(code) {
   } catch(e) { console.warn('Lang load failed', e); }
 }
 
-function t(key, fallback) {
-  return dict[key] || fallback;
-}
+function t(key, fallback) { return dict[key] || fallback; }
 
 function applyDict() {
-  if (dict.welcome) {
-    document.getElementById('hdr-title').textContent = '🌾 ' + dict.welcome;
-  }
+  if (dict.welcome) document.getElementById('hdr-title').textContent = '🌾 ' + dict.welcome;
 }
 
-// ── GPS ──
+// ── GPS ────────────────────────────────────────────────────────────────────
 function autoLocate() {
   if (!navigator.geolocation) return alert('GPS not supported');
   navigator.geolocation.getCurrentPosition(pos => {
@@ -434,13 +450,12 @@ function autoLocate() {
   });
 }
 
-// ── UART Sensor Simulation ──
+// ── UART Sensor Simulation ─────────────────────────────────────────────────
 function startSensorSim() {
   if (sensorSocket) { sensorSocket.close(); sensorSocket = null; }
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws = new WebSocket(`${protocol}://${location.host}/ws/uart/simulate`);
   sensorSocket = ws;
-
   ws.onopen = () => {
     document.getElementById('uart-dot').classList.add('live');
     document.getElementById('uart-status-text').textContent = 'Live';
@@ -449,12 +464,13 @@ function startSensorSim() {
     const msg = JSON.parse(e.data);
     if (msg.type === 'sensor_update') {
       const d = msg.data;
-      document.getElementById('s-ph').value = d.pH.toFixed(2);
-      document.getElementById('s-n').value = d.N.toFixed(1);
-      document.getElementById('s-p').value = d.P.toFixed(1);
-      document.getElementById('s-k').value = d.K.toFixed(1);
+      document.getElementById('s-ph').value    = d.pH.toFixed(2);
+      document.getElementById('s-n').value     = d.N.toFixed(1);
+      document.getElementById('s-p').value     = d.P.toFixed(1);
+      document.getElementById('s-k').value     = d.K.toFixed(1);
       document.getElementById('s-moist').value = d.moisture.toFixed(1);
-      document.getElementById('uart-status-text').textContent = `Live · N${d.N.toFixed(0)} P${d.P.toFixed(0)} K${d.K.toFixed(0)}`;
+      document.getElementById('uart-status-text').textContent =
+        `Live · N${d.N.toFixed(0)} P${d.P.toFixed(0)} K${d.K.toFixed(0)}`;
     }
   };
   ws.onclose = () => {
@@ -464,31 +480,225 @@ function startSensorSim() {
   };
 }
 
-// ── Main: Get Vedic Plan (defined fully below after syncNow) ──
-// getPlan is defined later in the script to include SLM + sync support
+// ── WebLLM ─────────────────────────────────────────────────────────────────
+async function loadWebLLM() {
+  const btn = document.getElementById('btn-webllm');
+  const progress = document.getElementById('webllm-progress-wrap');
+  const bar      = document.getElementById('webllm-bar');
+  const txt      = document.getElementById('webllm-progress-text');
+  const status   = document.getElementById('webllm-status');
+  const chk      = document.getElementById('chk-webllm');
 
-// ── Render Results ──
+  btn.disabled = true;
+  progress.style.display = 'block';
+  status.textContent = 'Starting download…';
+
+  if (!WebLLMAdapter.isWebGPUSupported()) {
+    status.textContent = '❌ WebGPU not supported. Try Chrome 113+ on a GPU device.';
+    setBadge('badge-webllm', 'warn', '🧠 No WebGPU');
+    btn.disabled = false;
+    return;
+  }
+
+  setBadge('badge-webllm', 'load', '🧠 Downloading…');
+
+  const ok = await WebLLMAdapter.load((info) => {
+    const pct = Math.round((info.progress || 0) * 100);
+    bar.style.width  = pct + '%';
+    txt.textContent  = info.text || `${pct}%`;
+    status.textContent = info.text || '';
+    if (info.done) {
+      setBadge('badge-webllm', 'ok', '🧠 WebLLM ✓');
+      chk.disabled = false;
+      chk.checked  = true;
+      progress.style.display = 'none';
+      btn.textContent = '🧠 Browser LLM Ready ✓';
+    }
+    if (info.error) {
+      setBadge('badge-webllm', 'warn', '🧠 Error');
+      btn.disabled = false;
+    }
+  });
+
+  if (!ok) btn.disabled = false;
+}
+
+// ── Offline Sync → IndexedDB ───────────────────────────────────────────────
+async function syncNow() {
+  const lat = parseFloat(document.getElementById('inp-lat').value);
+  const lon = parseFloat(document.getElementById('inp-lon').value);
+  if (isNaN(lat) || isNaN(lon)) { alert('Enter location first.'); return; }
+
+  if (!navigator.onLine) {
+    document.getElementById('sync-status').textContent =
+      '📵 Offline — showing last cached data';
+    await showCachedData(lat, lon);
+    return;
+  }
+
+  const btn    = document.getElementById('btn-sync');
+  const status = document.getElementById('sync-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Syncing…';
+  status.textContent = 'Fetching NASA Sentinel-2 + OpenWeather (7 days, 10km radius)…';
+
+  try {
+    const r = await fetch('/api/v1/sync', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ lat, lon, force: false })
+    });
+    const d = await r.json();
+
+    // Save to IndexedDB
+    const result = d.result || {};
+    if (result.weather) await KrishiIDB.saveWeather(lat, lon, result.weather);
+    if (result.ndvi)    await KrishiIDB.saveNdvi(lat, lon, result.ndvi);
+
+    const meta    = result.sync_meta || {};
+    const sources = (meta.sources || []).join(', ');
+    const age     = await KrishiIDB.syncAgeLabel();
+    status.textContent = `✅ Cached in browser! Sources: ${sources}`;
+    setBadge('badge-idb', 'ok', `💾 IDB · ${age}`);
+  } catch(e) {
+    status.textContent = '❌ Sync failed: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📥 Sync 7-Day Data (10km)';
+  }
+}
+
+async function showCachedData(lat, lon) {
+  const weather = await KrishiIDB.getWeather(lat, lon);
+  const ndvi    = await KrishiIDB.getNdvi(lat, lon);
+  if (!weather && !ndvi) return;
+
+  const card = document.getElementById('wasm-result-card');
+  const body = document.getElementById('wasm-result-body');
+  card.style.display = 'block';
+
+  const kd = VedicWASM.runAllSutras({
+    ph: parseFloat(document.getElementById('s-ph').value) || 6.5,
+    N:  parseFloat(document.getElementById('s-n').value)  || 35,
+    P:  parseFloat(document.getElementById('s-p').value)  || 28,
+    K:  parseFloat(document.getElementById('s-k').value)  || 40,
+    moisture: parseFloat(document.getElementById('s-moist').value) || 50,
+    om: parseFloat(document.getElementById('s-om').value) || 2.0,
+  });
+
+  body.innerHTML = `
+    <strong>🌿 Soil Wellness:</strong> ${kd.gunakasamuccaya?.wellness ?? '—'}/100<br>
+    <strong>📉 NPK Deficit:</strong> ${kd.nikhilam?.deficit_ppm ?? '—'} ppm<br>
+    <strong>🌾 Yield Index:</strong> ${kd.urdhva?.yield_index ?? '—'}/100<br>
+    <strong>⚠️ Ahimsa Stress:</strong> ${kd.ahimsa_stress ?? '—'} ${kd.ahimsa_triggered ? '🔴 ORGANIC ONLY' : '✅ OK'}<br>
+    ${weather ? `<strong>🌡️ Cached Weather:</strong> ${weather.temperature_c ?? '—'}°C<br>` : ''}
+    ${ndvi    ? `<strong>🛰️ Cached NDVI:</strong> ${ndvi.ndvi ?? '—'} — ${ndvi.crop_health ?? '—'}<br>` : ''}
+    <em style="color:var(--muted);font-size:0.75rem;">Source: Vedic JS Kernels (offline)</em>
+  `;
+}
+
+// ── Main: Get Vedic Plan ────────────────────────────────────────────────────
+async function getPlan() {
+  const lat = parseFloat(document.getElementById('inp-lat').value);
+  const lon = parseFloat(document.getElementById('inp-lon').value);
+  if (isNaN(lat) || isNaN(lon)) { alert('Please enter a valid location.'); return; }
+
+  // Offline-first: if no network, use WASM + cached IDB data
+  if (!navigator.onLine) {
+    await showCachedData(lat, lon);
+    document.getElementById('sync-status').textContent =
+      '📵 Offline — Vedic kernels ran in browser. Sync when online for full plan.';
+    return;
+  }
+
+  const btn  = document.getElementById('btn-plan');
+  const icon = document.getElementById('btn-icon');
+  const lbl  = document.getElementById('btn-label');
+  btn.disabled = true;
+  icon.innerHTML = '<span class="spinner"></span>';
+  lbl.textContent = 'Calculating…';
+
+  const useServerSLM = document.getElementById('chk-slm')?.checked || false;
+  const useWebLLM    = document.getElementById('chk-webllm')?.checked && WebLLMAdapter.isReady();
+
+  const sensor = {
+    ph: parseFloat(document.getElementById('s-ph').value)    || 6.5,
+    N:  parseFloat(document.getElementById('s-n').value)     || 35,
+    P:  parseFloat(document.getElementById('s-p').value)     || 28,
+    K:  parseFloat(document.getElementById('s-k').value)     || 40,
+    moisture: parseFloat(document.getElementById('s-moist').value) || 50,
+    om: parseFloat(document.getElementById('s-om').value)    || 2.0,
+  };
+
+  const sensor_data = [sensor.ph, sensor.N, sensor.P, sensor.K, sensor.moisture, sensor.om, 0.3, 28.0];
+
+  // Run WASM kernels in browser first (instant, always)
+  const kernelData = VedicWASM.runAllSutras(sensor);
+
+  try {
+    const t0 = Date.now();
+    const resp = await fetch('/api/v1/plan', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        lat, lon, sensor_data,
+        soil_type: document.getElementById('sel-soil-type').value,
+        growth_stage: 0,
+        use_slm: useServerSLM,
+      })
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    const data    = await resp.json();
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
+
+    // Cache the returned data in IndexedDB for offline use
+    if (data.external_data?.weather) await KrishiIDB.saveWeather(lat, lon, data.external_data.weather);
+    if (data.external_data?.crop_health_ndvi) await KrishiIDB.saveNdvi(lat, lon, data.external_data.crop_health_ndvi);
+
+    renderResults(data, elapsed);
+    if (data.slm_advice) renderSLMAdvice(data.slm_advice);
+
+    // Optionally run WebLLM advice in browser (parallel, non-blocking)
+    if (useWebLLM) {
+      renderWebLLMAdvice({ loading: true });
+      WebLLMAdapter.getAdvice({ sensor, lang, kernelData }).then(renderWebLLMAdvice);
+    }
+
+    const age = await KrishiIDB.syncAgeLabel();
+    setBadge('badge-idb', 'ok', `💾 IDB · ${age}`);
+  } catch(err) {
+    // Network failure: fall back to WASM-only result
+    if (!navigator.onLine || err.message.includes('fetch')) {
+      await showCachedData(lat, lon);
+    } else {
+      alert('Error: ' + err.message);
+    }
+  } finally {
+    btn.disabled = false;
+    icon.textContent = '🌿';
+    lbl.textContent = 'Get Vedic Agricultural Plan';
+  }
+}
+
+// ── Render Results ─────────────────────────────────────────────────────────
 function renderResults(data, elapsed) {
-  const p = data.vedic_plan;
+  const p      = data.vedic_plan;
   const sutras = data.sutra_computations;
-  const ext = data.external_data;
+  const ext    = data.external_data;
 
   document.getElementById('result-section').style.display = 'block';
   document.getElementById('result-section').scrollIntoView({behavior:'smooth'});
 
-  // Summary
   document.getElementById('res-summary').textContent = p.summary + ` (⚡ ${elapsed}s)`;
 
-  // Wellness bar
-  const w = p.wellness_score;
+  const w   = p.wellness_score;
   const bar = document.getElementById('wellness-bar');
-  bar.style.width = w + '%';
+  bar.style.width      = w + '%';
   bar.style.background = w > 65 ? 'var(--green)' : w > 35 ? 'var(--amber)' : 'var(--red)';
   const badge = document.getElementById('wellness-badge');
   badge.textContent = w.toFixed(0) + '/100';
-  badge.className = 'badge ' + (w > 65 ? 'badge-green' : w > 35 ? 'badge-amber' : 'badge-red');
+  badge.className   = 'badge ' + (w > 65 ? 'badge-green' : w > 35 ? 'badge-amber' : 'badge-red');
 
-  // Scores
   document.getElementById('res-yield').textContent = p.yield_index.toFixed(0) + '/100';
   const sc = p.stress_code;
   const stressEl = document.getElementById('res-stress');
@@ -496,36 +706,28 @@ function renderResults(data, elapsed) {
   stressEl.style.color = sc >= 108 ? 'var(--red)' : sc >= 60 ? 'var(--amber)' : 'var(--green)';
   document.getElementById('res-paksha').textContent = p.paksha === 'waxing' ? '🌙 Shukla' : '🌑 Krishna';
 
-  // Icon cards
   document.getElementById('val-soil').textContent = w.toFixed(0) + '/100';
   const wdata = ext.weather;
   document.getElementById('val-weather').textContent = wdata.temperature_c
-    ? `${wdata.temperature_c}°C · ${wdata.season || 'N/A'}`
-    : '—';
+    ? `${wdata.temperature_c}°C · ${wdata.season || 'N/A'}` : '—';
   const ndvi = ext.crop_health_ndvi;
   document.getElementById('val-crop').textContent = ndvi.ndvi
-    ? `NDVI ${ndvi.ndvi} · ${ndvi.crop_health}`
-    : '—';
+    ? `NDVI ${ndvi.ndvi} · ${ndvi.crop_health}` : '—';
 
-  // Ahimsa
   const ahimsa = document.getElementById('ahimsa-box');
   if (p.ahimsa_108_triggered) {
     ahimsa.style.display = 'block';
     ahimsa.className = sc > 150 ? 'ahimsa-alert ahimsa-critical' : 'ahimsa-alert';
     document.getElementById('ahimsa-title').textContent = `🚨 Ahimsa-108 Activated (Code: ${sc.toFixed(1)})`;
     document.getElementById('ahimsa-msg').textContent =
-      'Soil stress exceeds threshold 108. Chemical inputs halted. Organic protocol prescribed.';
+      'Soil stress exceeds threshold. Chemical inputs halted. Organic protocol prescribed.';
   } else {
     ahimsa.style.display = 'none';
   }
 
-  // Crops
-  const cropsEl = document.getElementById('res-crops');
-  cropsEl.innerHTML = (p.primary_crops || []).map(c =>
-    `<span class="crop-chip">🌱 ${c}</span>`
-  ).join('');
+  document.getElementById('res-crops').innerHTML = (p.primary_crops || []).map(c =>
+    `<span class="crop-chip">🌱 ${c}</span>`).join('');
 
-  // Weather + NDVI
   document.getElementById('res-weather').innerHTML = `
     <strong>🌡️ Temperature:</strong> ${wdata.temperature_c || '—'}°C<br>
     <strong>💧 Monthly Rainfall:</strong> ${wdata.rainfall_mm_monthly || '—'} mm<br>
@@ -534,131 +736,41 @@ function renderResults(data, elapsed) {
     <strong>📡 Source:</strong> ${wdata.source} / ${ndvi.source}
   `;
 
-  // Recommendations
-  const recEl = document.getElementById('res-recs');
-  recEl.innerHTML = (p.recommendations || []).map(r =>
-    `<li>${r}</li>`
-  ).join('');
+  document.getElementById('res-recs').innerHTML = (p.recommendations || []).map(r =>
+    `<li>${r}</li>`).join('');
 
-  // Intervention
-  const iv = p.intervention;
+  const iv     = p.intervention;
   const ivCard = document.getElementById('intervention-card');
   if (iv) {
     ivCard.style.display = 'block';
     let html = `<strong>${iv.primary_intervention}</strong><br>`;
     if (iv.application) html += `<br>📋 <em>Application:</em> ${iv.application}<br>`;
-    if (iv.preparation) html += `<br>🧪 <em>Preparation:</em> ${iv.preparation}<br>`;
-    if (iv.vedic_timing) html += `<br>🕉️ <em>Vedic Timing:</em> ${iv.vedic_timing}<br>`;
+    if (iv.preparation)  html += `<br>🧪 <em>Preparation:</em> ${iv.preparation}<br>`;
+    if (iv.vedic_timing)  html += `<br>🕉️ <em>Vedic Timing:</em> ${iv.vedic_timing}<br>`;
     if (iv.expected_recovery_days) html += `<br>⏳ Recovery: ${iv.expected_recovery_days} days`;
-    if (iv.ingredients) html += `<br><br>Ingredients:<br>${iv.ingredients.map(i=>`• ${i}`).join('<br>')}`;
+    if (iv.ingredients)   html += `<br><br>Ingredients:<br>${iv.ingredients.map(i=>`• ${i}`).join('<br>')}`;
     document.getElementById('res-intervention').innerHTML = html;
   } else {
     ivCard.style.display = 'none';
   }
 
-  // Sutra Chips
-  const sutraEl = document.getElementById('res-sutras');
-  sutraEl.innerHTML = Object.entries(sutras).map(([key, val]) => {
-    const label = SUTRA_NAMES[key] || key;
+  document.getElementById('res-sutras').innerHTML = Object.entries(sutras).map(([key, val]) => {
+    const label   = SUTRA_NAMES[key] || key;
     const summary = getSutraSummary(key, val);
     return `<span class="sutra-chip" title="${JSON.stringify(val)}">${label}: ${summary}</span>`;
   }).join('');
 }
 
 function getSutraSummary(key, val) {
-  if (key === 'anurupyena') return `N×${val.npk_scale_factors?.N} P×${val.npk_scale_factors?.P}`;
-  if (key === 'nikhilam') return `Deficit ${val.npk_deficit_ppm} ppm`;
-  if (key === 'paravartya') return `${val.liming_kg_per_ha > 0 ? '+' : ''}${val.liming_kg_per_ha} kg/ha`;
-  if (key === 'ekadhikena') return `Next: ${val.next_growth_milestone}`;
-  if (key === 'urdhva') return `Yield ${val.yield_index}/100`;
-  if (key === 'vilokanam') return val.anomaly_detected ? '⚠️ Anomaly' : '✅ Normal';
-  if (key === 'gunakasamuccaya') return `${val.wellness_index}/100`;
-  if (key === 'shunyam') return val.shunyam_achieved ? '⭕ Balanced' : `Residual ${val.residual_stress}`;
+  if (key === 'anurupyena')        return `N×${val.npk_scale_factors?.N} P×${val.npk_scale_factors?.P}`;
+  if (key === 'nikhilam')          return `Deficit ${val.npk_deficit_ppm} ppm`;
+  if (key === 'paravartya')        return `${val.liming_kg_per_ha > 0 ? '+' : ''}${val.liming_kg_per_ha} kg/ha`;
+  if (key === 'ekadhikena')        return `Next: ${val.next_growth_milestone}`;
+  if (key === 'urdhva')            return `Yield ${val.yield_index}/100`;
+  if (key === 'vilokanam')         return val.anomaly_detected ? '⚠️ Anomaly' : '✅ Normal';
+  if (key === 'gunakasamuccaya')   return `${val.wellness_index}/100`;
+  if (key === 'shunyam')           return val.shunyam_achieved ? '⭕ Balanced' : `Residual ${val.residual_stress}`;
   return '';
-}
-
-// ── Offline Sync ──
-async function syncNow() {
-  const lat = parseFloat(document.getElementById('inp-lat').value);
-  const lon = parseFloat(document.getElementById('inp-lon').value);
-  if (isNaN(lat) || isNaN(lon)) { alert('Enter location first.'); return; }
-  const btn = document.getElementById('btn-sync');
-  const status = document.getElementById('sync-status');
-  btn.disabled = true;
-  btn.textContent = '⏳ Syncing…';
-  status.textContent = 'Fetching NASA Sentinel-2 + OpenWeather for 10km radius…';
-  try {
-    const r = await fetch('/api/v1/sync', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({lat, lon, force: false})
-    });
-    const d = await r.json();
-    const meta = d.result?.sync_meta || {};
-    const sources = (meta.sources || []).join(', ');
-    status.textContent = `✅ Cached! Sources: ${sources}`;
-  } catch(e) {
-    status.textContent = '❌ Sync failed: ' + e.message;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '📥 Sync Offline Cache (10km)';
-  }
-}
-
-// ── Main: Get Vedic Plan (with SLM + sync support) ──
-async function getPlan() {
-  const lat = parseFloat(document.getElementById('inp-lat').value);
-  const lon = parseFloat(document.getElementById('inp-lon').value);
-  if (isNaN(lat) || isNaN(lon)) { alert('Please enter a valid location.'); return; }
-
-  const btn = document.getElementById('btn-plan');
-  const icon = document.getElementById('btn-icon');
-  const lbl = document.getElementById('btn-label');
-  btn.disabled = true;
-  icon.innerHTML = '<span class="spinner"></span>';
-  lbl.textContent = 'Calculating…';
-
-  const useSLM = document.getElementById('chk-slm')?.checked || false;
-  const sensor_data = [
-    parseFloat(document.getElementById('s-ph').value)   || 6.5,
-    parseFloat(document.getElementById('s-n').value)    || 35,
-    parseFloat(document.getElementById('s-p').value)    || 28,
-    parseFloat(document.getElementById('s-k').value)    || 40,
-    parseFloat(document.getElementById('s-moist').value)|| 50,
-    parseFloat(document.getElementById('s-om').value)   || 2.0,
-    0.3, 28.0
-  ];
-
-  const body = {
-    lat, lon, sensor_data,
-    soil_type: document.getElementById('sel-soil-type').value,
-    growth_stage: 0,
-    use_slm: useSLM,
-  };
-
-  try {
-    const t0 = Date.now();
-    const resp = await fetch('/api/v1/plan', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(body)
-    });
-    if (!resp.ok) throw new Error(await resp.text());
-    const data = await resp.json();
-    const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
-    renderResults(data, elapsed);
-
-    // Show SLM advice if present
-    if (data.slm_advice) {
-      renderSLMAdvice(data.slm_advice);
-    }
-  } catch(err) {
-    alert('Error: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    icon.textContent = '🌿';
-    lbl.textContent = 'Get Vedic Agricultural Plan';
-  }
 }
 
 function renderSLMAdvice(slm) {
@@ -677,17 +789,47 @@ function renderSLMAdvice(slm) {
     : '<span style="color:var(--green);">✅ Soil OK</span>';
   const vg = slm.vedic_grounding || {};
   box.innerHTML = `
-    <h3>🧠 SLM Advice <small style="font-weight:400;font-size:0.75rem;">${engine}</small></h3>
+    <h3>🧠 Server SLM Advice <small style="font-weight:400;font-size:0.75rem;">${engine}</small></h3>
     <div style="background:#f1f8e9;border-radius:10px;padding:12px;font-size:0.9rem;line-height:1.7;white-space:pre-wrap;">${slm.advice}</div>
     <div style="margin-top:10px;font-size:0.8rem;color:var(--muted);">
       ${ahimsa} · Vedic Wellness: ${vg.wellness || '—'}/100 · Stress: ${vg.stress_code || '—'}
-    </div>
-  `;
+    </div>`;
 }
 
-// ── Service Worker ──
+function renderWebLLMAdvice(result) {
+  let box = document.getElementById('webllm-advice-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'webllm-advice-box';
+    box.className = 'result-card';
+    document.getElementById('result-section').prepend(box);
+  }
+  if (result.loading) {
+    box.innerHTML = `<h3>🧠 Browser LLM <small>(Qwen2.5-0.5B · WebGPU)</small></h3>
+      <div style="color:var(--muted);font-size:0.9rem;">⏳ Generating on-device…</div>`;
+    return;
+  }
+  if (result.error) {
+    box.innerHTML = `<h3>🧠 Browser LLM</h3><div style="color:var(--red);">❌ ${result.error}</div>`;
+    return;
+  }
+  const ahimsa = result.ahimsa_triggered
+    ? '<span style="color:var(--red);font-weight:700;">⚠️ Ahimsa-108 Active</span>'
+    : '<span style="color:var(--green);">✅ Soil OK</span>';
+  box.innerHTML = `
+    <h3>🧠 Browser LLM Advice <small style="font-weight:400;font-size:0.75rem;">${result.model} · ${result.inference_seconds}s on-device</small></h3>
+    <div style="background:#f3e5f5;border-radius:10px;padding:12px;font-size:0.9rem;line-height:1.7;white-space:pre-wrap;">${result.advice}</div>
+    <div style="margin-top:8px;font-size:0.78rem;color:var(--muted);">${ahimsa} · Vedic-grounded · Runs offline after first download</div>`;
+}
+
+// ── Service Worker (root scope via /sw.js) ─────────────────────────────────
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    .then(() => setBadge('badge-sw', 'ok', '📡 SW ✓ Offline-ready'))
+    .catch((e) => {
+      setBadge('badge-sw', 'warn', '📡 SW failed');
+      console.warn('SW registration failed:', e);
+    });
 }
 </script>
 </body>

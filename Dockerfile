@@ -1,48 +1,74 @@
 FROM python:3.10-slim
 
-# ── System deps: C++ compiler + build tools ──────────────────────────────────
+# ── Stage 1: Emscripten WASM build ──────────────────────────────────────────
+# Install emsdk to compile vedic_kernels_wasm.cpp → vedic_kernels.js + .wasm
+FROM python:3.10-slim AS wasm-builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git cmake python3 nodejs npm xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /emsdk
+RUN git clone --depth 1 https://github.com/emscripten-core/emsdk.git . && \
+    ./emsdk install latest && \
+    ./emsdk activate latest
+
+WORKDIR /app
+COPY vedic_core/vedic_kernels_wasm.cpp vedic_core/
+
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh && \
+    emcc -Os -s WASM=1 \
+         -s EXPORTED_RUNTIME_METHODS='[\"cwrap\",\"ccall\",\"FS\"]' \
+         -s EXPORTED_FUNCTIONS='[\"_anurupyena_scale\",\"_nikhilam_deficit\",\
+\"_paravartya_ph_inversion\",\"_ekadhikena_next_stage\",\
+\"_urdhva_yield_score\",\"_vilokanam_anomaly\",\
+\"_gunakasamuccaya_wellness\",\"_shunyam_stress_balance\",\
+\"_ahimsa_108_stress_code\",\"_malloc\",\"_free\"]' \
+         -s MODULARIZE=0 \
+         -s ENVIRONMENT='web,worker' \
+         vedic_core/vedic_kernels_wasm.cpp \
+         -o /wasm_out/vedic_kernels.js" && \
+    echo 'WASM build complete'
+
+# ── Stage 2: Runtime ─────────────────────────────────────────────────────────
+FROM python:3.10-slim
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
         g++ \
         build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Working directory ─────────────────────────────────────────────────────────
 WORKDIR /app
 
-# ── Python deps (cached layer — only re-runs if requirements.txt changes) ────
+# Python deps (cached layer)
 COPY requirements.txt .
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
 
-# ── Copy source code ──────────────────────────────────────────────────────────
+# Copy full source
 COPY . .
 
-# ── Compile the 8 Krishi-Sutras into a shared library ────────────────────────
-# Primary source lives in vedic_core/ (canonical location).
-# -Os  : optimise for binary size — runs on low-RAM / old processors
-# -fPIC: required for shared libraries
-# -lm  : link math library
+# Copy compiled WASM artefacts into the frontend/ directory (served as /static/)
+COPY --from=wasm-builder /wasm_out/vedic_kernels.js  frontend/vedic_kernels.js
+COPY --from=wasm-builder /wasm_out/vedic_kernels.wasm frontend/vedic_kernels.wasm
+
+# Compile native .so for the Python backend (separate from WASM)
 RUN g++ -Os -fPIC -shared -std=c++14 \
         -o vedic_core/vedic_kernels.so \
         vedic_core/vedic_kernels.cpp \
         -lm && \
-    # Mirror to legacy path so existing Python bridge still resolves
     cp vedic_core/vedic_kernels.so vedic_engine/kernels/vedic_kernels.so
 
-# ── Runtime environment variables ─────────────────────────────────────────────
-# API keys: inject at deploy time via --env-file or platform secrets panel.
-# Never hardcode values here.
+# ── Environment variables ─────────────────────────────────────────────────────
 ENV OPENWEATHER_API_KEY=""
 ENV NASA_EARTHDATA_TOKEN=""
 ENV SLM_CACHE_DIR="/tmp/slm_cache"
 
 # ── Port ──────────────────────────────────────────────────────────────────────
-# HuggingFace Spaces → PORT=7860 (default)
-# Railway / Render / generic cloud → PORT=8080
-# Override: docker run -e PORT=8080 ...
+# HuggingFace Spaces → 7860 (default)
+# Railway / Render   → 8080  (set PORT=8080)
 ENV PORT=7860
 EXPOSE 7860
 EXPOSE 8080
 
-# ── Start FastAPI ─────────────────────────────────────────────────────────────
 CMD uvicorn backend.main:app --host 0.0.0.0 --port ${PORT}
