@@ -9,11 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ── Working directory ─────────────────────────────────────────────────────────
 WORKDIR /app
 
-# ── Copy only what we need first (for better layer caching) ──────────────────
+# ── Python deps (cached layer — only re-runs if requirements.txt changes) ────
 COPY requirements.txt .
-
-# ── Install Python deps ───────────────────────────────────────────────────────
-# Install torch CPU-only first (smaller wheel); then the rest.
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -21,18 +18,28 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 COPY . .
 
 # ── Compile the 8 Krishi-Sutras into a shared library ────────────────────────
-# -Os  : optimise for binary size (runs well on old/low-RAM processors)
-# -fPIC: position-independent code required for .so
+# Primary source lives in vedic_core/ (canonical location).
+# -Os  : optimise for binary size — runs on low-RAM / old processors
+# -fPIC: required for shared libraries
 # -lm  : link math library
 RUN g++ -Os -fPIC -shared -std=c++14 \
-        -o vedic_engine/kernels/vedic_kernels.so \
-        vedic_engine/kernels/vedic_kernels.cpp \
-        -lm
+        -o vedic_core/vedic_kernels.so \
+        vedic_core/vedic_kernels.cpp \
+        -lm && \
+    # Mirror to legacy path so existing Python bridge still resolves
+    cp vedic_core/vedic_kernels.so vedic_engine/kernels/vedic_kernels.so
+
+# ── Runtime environment variables ─────────────────────────────────────────────
+# API keys: inject at deploy time via --env-file or platform secrets panel.
+# Never hardcode values here.
+ENV OPENWEATHER_API_KEY=""
+ENV NASA_EARTHDATA_TOKEN=""
+ENV SLM_CACHE_DIR="/tmp/slm_cache"
 
 # ── Port ──────────────────────────────────────────────────────────────────────
-# HuggingFace Spaces expects 7860.
-# Railway / generic cloud defaults to 8080.
-# Override at runtime: docker run -e PORT=8080 ...
+# HuggingFace Spaces → PORT=7860 (default)
+# Railway / Render / generic cloud → PORT=8080
+# Override: docker run -e PORT=8080 ...
 ENV PORT=7860
 EXPOSE 7860
 EXPOSE 8080
