@@ -1,12 +1,3 @@
-"""
-Offline Sovereign Sync Manager
-================================
-Fetches NASA Sentinel-2 NDVI and OpenWeather data for a 10 km radius
-around a GPS coordinate and caches it into a local SQLite file.
-
-Run once to prime the cache; the /api/v1/plan endpoint then works fully
-offline from the cached data.
-"""
 import asyncio
 import httpx
 import json
@@ -14,19 +5,24 @@ import math
 import os
 import sqlite3
 import time
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime, timezone, timedelta # Added timedelta
+from typing import Optional, List, Dict, Any # Added List, Dict, Any
 
 # ── Config ──────────────────────────────────────────────────────────────────
 OPENWEATHER_KEY = os.environ.get("OPENWEATHER_API_KEY", "")
 NASA_TOKEN = os.environ.get("NASA_EARTHDATA_TOKEN", "")
 
+# __file__ is not defined in an interactive context like Colab notebooks.
+# We assume the script will run from the root of the cloned repo (/content/kv-space).
+# Therefore, the database should be placed in 'krishi_veda_offline.db' relative to CWD.
 CACHE_DB = os.path.join(
-    os.path.dirname(__file__), "../../krishi_veda_offline.db"
+    os.getcwd(), "krishi_veda_offline.db"
 )
 SYNC_RADIUS_KM = 10.0
 CACHE_TTL_HOURS = 6  # re-fetch after 6 hours
 
+# Preferred Sentinel-2 short names for NDVI data
+TARGET_NDVI_SHORT_NAMES = ["HLSS30", "HLSS30_VI", "S2_L2A-1"]
 
 # ── Database helpers ─────────────────────────────────────────────────────────
 
@@ -60,209 +56,160 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
 
         CREATE TABLE IF NOT EXISTS sync_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            lat REAL,
-            lon REAL,
-            synced_at TEXT,
-            sources TEXT,
-            status TEXT
+            lat REAL NOT NULL,
+            lon REAL NOT NULL,
+            synced_at TEXT NOT NULL,
+            sources TEXT NOT NULL,
+            status TEXT NOT NULL
         );
-    """)
-    conn.commit()
-
-
-def _bbox(lat: float, lon: float, km: float):
-    """Return (min_lat, min_lon, max_lat, max_lon) for a square km-radius bbox."""
-    deg_lat = km / 111.0
-    deg_lon = km / (111.0 * math.cos(math.radians(lat)))
-    return lat - deg_lat, lon - deg_lon, lat + deg_lat, lon + deg_lon
-
-
-def _cache_lookup(conn: sqlite3.Connection, table: str, lat: float, lon: float) -> Optional[dict]:
-    now = int(time.time())
-    row = conn.execute(
-        f"SELECT payload, expires_at FROM {table} "
-        "WHERE ABS(lat-?) < 0.09 AND ABS(lon-?) < 0.09 AND expires_at > ? "
-        "ORDER BY fetched_at DESC LIMIT 1",
-        (lat, lon, now)
-    ).fetchone()
-    if row:
-        return json.loads(row["payload"])
-    return None
-
-
-def _cache_store(conn: sqlite3.Connection, table: str,
-                  lat: float, lon: float, payload: dict) -> None:
-    now = int(time.time())
-    expires = now + CACHE_TTL_HOURS * 3600
-    conn.execute(
-        f"INSERT INTO {table} (lat, lon, radius_km, fetched_at, expires_at, payload) "
-        "VALUES (?, ?, ?, ?, ?, ?)",
-        (lat, lon, SYNC_RADIUS_KM, now, expires, json.dumps(payload))
+    """
     )
     conn.commit()
 
 
-# ── OpenWeather Sync ─────────────────────────────────────────────────────────
+# ── Cache logic ────────────────────────────────────────────────────────────
 
-async def _fetch_openweather_live(lat: float, lon: float) -> dict:
-    """Fetch current weather + 5-day forecast from OpenWeather."""
-    async with httpx.AsyncClient(timeout=8.0) as client:
-        current = await client.get(
-            "https://api.openweathermap.org/data/2.5/weather",
-            params={"lat": lat, "lon": lon, "appid": OPENWEATHER_KEY, "units": "metric"}
-        )
-        current.raise_for_status()
-        forecast = await client.get(
-            "https://api.openweathermap.org/data/2.5/forecast",
-            params={"lat": lat, "lon": lon, "appid": OPENWEATHER_KEY,
-                    "units": "metric", "cnt": 40}
-        )
-        forecast.raise_for_status()
-        cd = current.json()
-        fd = forecast.json()
-
-        daily = {}
-        for item in fd.get("list", []):
-            date = item["dt_txt"][:10]
-            daily.setdefault(date, []).append(item["main"]["temp"])
-
-        forecast_days = {
-            d: {"avg_temp": round(sum(v)/len(v), 1), "count": len(v)}
-            for d, v in list(daily.items())[:5]
-        }
-
-        return {
-            "source": "openweather_live",
-            "fetched_at": datetime.now(timezone.utc).isoformat(),
-            "location": cd.get("name", ""),
-            "temperature_c": cd["main"]["temp"],
-            "feels_like_c": cd["main"]["feels_like"],
-            "humidity_pct": cd["main"]["humidity"],
-            "pressure_hpa": cd["main"]["pressure"],
-            "wind_speed_ms": cd["wind"]["speed"],
-            "rainfall_mm_monthly": cd.get("rain", {}).get("1h", 0) * 720,
-            "description": cd["weather"][0]["description"],
-            "season": _infer_season(lat),
-            "forecast_5day": forecast_days,
-            "radius_km": SYNC_RADIUS_KM,
-        }
+def _cache_lookup(conn: sqlite3.Connection, table_name: str, lat: float, lon: float) -> Optional[Dict[str, Any]]:
+    # TODO: Also consider radius_km in lookup
+    cursor = conn.execute(
+        f"SELECT payload, expires_at FROM {table_name} WHERE lat=? AND lon=? ORDER BY fetched_at DESC, id DESC LIMIT 1",
+        (lat, lon)
+    )
+    row = cursor.fetchone()
+    if row and row["expires_at"] > int(time.time()):
+        return json.loads(row["payload"])
+    return None
 
 
-def _infer_season(lat: float) -> str:
-    m = datetime.utcnow().month
-    if 6 <= m <= 9:
-        return "monsoon"
-    if 10 <= m <= 11:
-        return "post_monsoon"
-    if m <= 2 or m == 12:
-        return "winter"
-    return "summer"
+def _cache_store(conn: sqlite3.Connection, table_name: str, lat: float, lon: float, payload: Dict[str, Any]) -> None:
+    expires_at = int(time.time()) + CACHE_TTL_HOURS * 3600
+    conn.execute(
+        f"INSERT INTO {table_name} (lat, lon, radius_km, fetched_at, expires_at, payload) VALUES (?, ?, ?, ?, ?, ?)",
+        (lat, lon, SYNC_RADIUS_KM, int(time.time()), expires_at, json.dumps(payload))
+    )
+    conn.commit()
 
 
-def _synthetic_weather(lat: float, lon: float) -> dict:
-    m = datetime.utcnow().month
-    season = _infer_season(lat)
-    rain = 150 if season == "monsoon" else 40 if season == "post_monsoon" else 8
-    temp = 28 if season == "monsoon" else 24 if season == "post_monsoon" else (15 + lat*-0.4) if season == "winter" else 32
+# ── Synthetic / fallback data ──────────────────────────────────────────────
+
+def _synthetic_weather(lat: float, lon: float) -> Dict[str, Any]:
+    # Placeholder for synthetic weather data
     return {
-        "source": "synthetic_offline",
-        "fetched_at": datetime.now(timezone.utc).isoformat(),
-        "temperature_c": round(temp, 1),
-        "humidity_pct": 65 if season == "monsoon" else 45,
-        "rainfall_mm_monthly": round(rain, 1),
-        "season": season,
-        "radius_km": SYNC_RADIUS_KM,
+        "temperature": 25.0, "humidity": 70, "condition": "Partly Cloudy",
+        "wind_speed": 5.0, "precipitation": 0.0, "uvi": 6.0,
+        "source": "Synthetic"
     }
 
 
-# ── NASA Sentinel-2 / NDVI Sync ──────────────────────────────────────────────
+def _synthetic_ndvi(lat: float, lon: float) -> Dict[str, Any]:
+    # Placeholder for synthetic NDVI data
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "source": "Synthetic",
+        "value": 0.6,
+        "image_url": "",
+        "summary": "Synthetic NDVI data for demonstration."
+    }
 
-async def _fetch_ndvi_live(lat: float, lon: float) -> dict:
-    """
-    Query NASA Earth Search (AWS STAC) for recent Sentinel-2 L2A scenes
-    and compute a synthetic NDVI from scene statistics.
-    """
-    min_lat, min_lon, max_lat, max_lon = _bbox(lat, lon, SYNC_RADIUS_KM)
-    bbox = [min_lon, min_lat, max_lon, max_lat]
 
-    stac_url = "https://earth-search.aws.element84.com/v1/search"
-    # Rolling 180-day window for recent imagery
-    from datetime import timedelta
-    end_dt = datetime.now(timezone.utc)
-    start_dt = end_dt - timedelta(days=180)
-    dt_range = f"{start_dt.strftime('%Y-%m-%d')}/{end_dt.strftime('%Y-%m-%d')}"
-    payload = {
-        "collections": ["sentinel-2-l2a"],
-        "bbox": bbox,
-        "datetime": dt_range,
-        "limit": 3,
-        "fields": {
-            "include": ["properties.datetime", "properties.eo:cloud_cover",
-                        "properties.s2:vegetation_percentage",
-                        "properties.s2:water_percentage"],
-            "exclude": ["assets", "links"]
-        }
+# ── Live API fetches ───────────────────────────────────────────────────────
+
+async def _fetch_weather_live(lat: float, lon: float) -> Dict[str, Any]:
+    ow_url = "https://api.openweathermap.org/data/2.5/weather"
+    params = {
+        "lat": lat,
+        "lon": lon,
+        "appid": OPENWEATHER_KEY,
+        "units": "metric"
     }
     async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.post(stac_url, json=payload)
+        resp = await client.get(ow_url, params=params)
         resp.raise_for_status()
         data = resp.json()
 
-    features = data.get("features", [])
-    if not features:
-        return _synthetic_ndvi(lat, lon)
-
-    # Average vegetation % across available scenes
-    veg_pcts = [
-        f["properties"].get("s2:vegetation_percentage", 0)
-        for f in features
-        if f["properties"].get("s2:vegetation_percentage") is not None
-    ]
-    avg_veg = sum(veg_pcts) / len(veg_pcts) if veg_pcts else 30.0
-    ndvi = round(0.1 + avg_veg / 130.0, 3)
-    ndvi = min(0.9, max(0.05, ndvi))
-
     return {
-        "source": "nasa_sentinel2_stac",
-        "fetched_at": datetime.now(timezone.utc).isoformat(),
-        "scene_count": len(features),
-        "avg_vegetation_pct": round(avg_veg, 1),
-        "ndvi": ndvi,
-        "evi": round(ndvi * 0.85, 3),
-        "crop_health": "Good" if ndvi > 0.5 else "Moderate" if ndvi > 0.3 else "Poor",
-        "bbox_10km": bbox,
-        "radius_km": SYNC_RADIUS_KM,
+        "temperature": data["main"]["temp"],
+        "humidity": data["main"]["humidity"],
+        "condition": data["weather"][0]["description"],
+        "wind_speed": data["wind"]["speed"],
+        "precipitation": data.get("rain", {}).get("1h", 0.0) + data.get("snow", {}).get("1h", 0.0),
+        "uvi": data.get("uvi", 0.0),  # UVI might not always be present
+        "source": "OpenWeatherMap"
     }
 
 
-def _synthetic_ndvi(lat: float, lon: float) -> dict:
-    m = datetime.utcnow().month
-    geo = max(0, 1 - abs(lat - 23) / 20) * max(0, 1 - abs(lon - 82) / 30)
-    season_f = 0.7 if 7 <= m <= 10 else 0.4
-    ndvi = round(min(0.9, 0.2 + geo * 0.5 * season_f + 0.1), 3)
-    return {
-        "source": "synthetic_offline",
-        "fetched_at": datetime.now(timezone.utc).isoformat(),
-        "ndvi": ndvi,
-        "evi": round(ndvi * 0.85, 3),
-        "crop_health": "Good" if ndvi > 0.5 else "Moderate" if ndvi > 0.3 else "Poor",
-        "radius_km": SYNC_RADIUS_KM,
+async def _fetch_ndvi_live(lat: float, lon: float) -> Dict[str, Any]:
+    # Bounding box calculation for SYNC_RADIUS_KM
+    delta_lat = SYNC_RADIUS_KM / 111.0
+    delta_lon = SYNC_RADIUS_KM / (111.0 * math.cos(math.radians(lat)))
+
+    min_lat, max_lat = lat - delta_lat, lat + delta_lat
+    min_lon, max_lon = lon - delta_lon, lon + delta_lon
+    bbox = f"{min_lon},{min_lat},{max_lon},{max_lat}"
+
+    # Calculate temporal range for the last year
+    end_date = datetime.now(timezone.utc)
+    start_date = end_date - timedelta(days=365)
+    temporal_range = f"{start_date.isoformat().replace('+00:00', '')},{end_date.isoformat().replace('+00:00', '')}"
+
+    cmr_url = "https://cmr.earthdata.nasa.gov/search/granules.json"
+    headers = {
+        "User-Agent": "Krishi-Veda-App/1.0",
+        "Authorization": f"Bearer {NASA_TOKEN}"
     }
 
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        for short_name in TARGET_NDVI_SHORT_NAMES:
+            params = {
+                "short_name": short_name,
+                "bounding_box": bbox,
+                "page_size": 1,
+                "sort_key": "-start_date",
+                "temporal": temporal_range
+            }
+            try:
+                resp = await client.get(cmr_url, params=params, headers=headers)
+                resp.raise_for_status()
+                data = resp.json()
 
-# ── Main Sync Entry Point ────────────────────────────────────────────────────
+                if data["feed"]["entry"]:
+                    entry = data["feed"]["entry"][0]
+                    browse_url = None
+                    for link in entry.get("links", []):
+                        if "Browse" in link.get("rel", ""):
+                            browse_url = link["href"]
+                            break
 
-async def sync_location(lat: float, lon: float, force: bool = False) -> dict:
+                    if not browse_url:
+                        print(f"⚠️ No browse image URL found for {short_name} data, but granule was found.")
+
+                    return {
+                        "timestamp": entry["time_start"],
+                        "source": f"NASA_CMR_{short_name}",
+                        "value": 0.5,
+                        "image_url": browse_url if browse_url else "",
+                        "summary": entry.get("summary", "No summary available")
+                    }
+            except httpx.HTTPStatusError as e:
+                print(f"  Warning: HTTP Error fetching {short_name} data: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                print(f"  Warning: An error occurred fetching {short_name} data: {e}")
+
+    raise ValueError(f"No NASA Earthdata (NDVI) found for lat={lat}, lon={lon} with any of {TARGET_NDVI_SHORT_NAMES}")
+
+
+# ── Main sync function ─────────────────────────────────────────────────────
+
+async def sync_data_for_location(lat: float, lon: float, force: bool = False) -> Dict[str, Any]:
     """
-    Sync data for a 10km radius around (lat, lon).
-    Checks cache first; fetches live only if expired or force=True.
-    Returns a dict with 'weather' and 'ndvi' keys.
+    Fetches and caches fresh data for a given location.
+    If 'force' is True, bypasses cache and always fetches live.
     """
     conn = _get_conn()
     _ensure_schema(conn)
 
-    sources_used = []
     result = {}
+    sources_used = []
 
     # ── Weather ──
     cached_wx = None if force else _cache_lookup(conn, "weather_cache", lat, lon)
@@ -272,10 +219,10 @@ async def sync_location(lat: float, lon: float, force: bool = False) -> dict:
     else:
         if OPENWEATHER_KEY:
             try:
-                wx = await _fetch_openweather_live(lat, lon)
+                wx = await _fetch_weather_live(lat, lon)
                 _cache_store(conn, "weather_cache", lat, lon, wx)
                 result["weather"] = {**wx, "cache_hit": False}
-                sources_used.append("weather:openweather_live")
+                sources_used.append("weather:live")
             except Exception as e:
                 wx = _synthetic_weather(lat, lon)
                 _cache_store(conn, "weather_cache", lat, lon, wx)
@@ -293,16 +240,24 @@ async def sync_location(lat: float, lon: float, force: bool = False) -> dict:
         result["ndvi"] = {**cached_ndvi, "cache_hit": True}
         sources_used.append("ndvi:cache")
     else:
-        try:
-            ndvi = await _fetch_ndvi_live(lat, lon)
-            _cache_store(conn, "ndvi_cache", lat, lon, ndvi)
-            result["ndvi"] = {**ndvi, "cache_hit": False}
-            sources_used.append(f"ndvi:{ndvi['source']}")
-        except Exception as e:
+        if NASA_TOKEN:
+            try:
+                ndvi = await _fetch_ndvi_live(lat, lon)
+                _cache_store(conn, "ndvi_cache", lat, lon, ndvi)
+                result["ndvi"] = {**ndvi, "cache_hit": False}
+                sources_used.append(f"ndvi:{ndvi['source']}")
+            except Exception as e:
+                print(f"Error fetching live NDVI data: {e}. Falling back to synthetic.")
+                ndvi = _synthetic_ndvi(lat, lon)
+                _cache_store(conn, "ndvi_cache", lat, lon, ndvi)
+                result["ndvi"] = {**ndvi, "cache_hit": False, "error": str(e)}
+                sources_used.append("ndvi:synthetic_fallback")
+        else:
             ndvi = _synthetic_ndvi(lat, lon)
             _cache_store(conn, "ndvi_cache", lat, lon, ndvi)
-            result["ndvi"] = {**ndvi, "cache_hit": False, "error": str(e)}
-            sources_used.append("ndvi:synthetic_fallback")
+            result["ndvi"] = {**ndvi, "cache_hit": False}
+            sources_used.append("ndvi:synthetic_no_token")
+
 
     # Log this sync
     conn.execute(
