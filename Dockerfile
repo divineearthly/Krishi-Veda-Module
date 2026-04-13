@@ -1,4 +1,3 @@
-FROM python:3.10-slim
 
 # ── Stage 1: Emscripten WASM build ──────────────────────────────────────────
 # Install emsdk to compile vedic_kernels_wasm.cpp → vedic_kernels.js + .wasm
@@ -13,6 +12,7 @@ RUN git clone --depth 1 https://github.com/emscripten-core/emsdk.git . && \
     ./emsdk install latest && \
     ./emsdk activate latest
 
+RUN mkdir -p /wasm_out
 WORKDIR /app
 COPY vedic_core/vedic_kernels_wasm.cpp vedic_core/
 

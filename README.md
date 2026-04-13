@@ -1,3 +1,15 @@
+---
+title: Krishi-Veda Global Engine
+emoji: 🌾
+colorFrom: green
+colorTo: yellow
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+short_description: Sovereign offline AI for Indian agriculture — Vedic + Ahimsa
+---
+
 # 🌾 Krishi-Veda Global Engine
 ### Sovereign AI for Indian Agriculture — Offline · Vedic · Ahimsa-First
 
