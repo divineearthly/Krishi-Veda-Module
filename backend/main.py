@@ -9,7 +9,7 @@ import asyncio
 
 from backend.core.lazy_loader import loader
 from backend.core.uart_listener import uart_websocket_handler, simulate_sensor_stream, get_latest_reading
-from backend.core.sync_manager import sync_location, get_cached
+from backend.core.sync_manager import sync_data_for_location, get_cached
 from backend.core import slm_engine
 from backend.services.slm_reasoning_engine import reason, FarmContext
 
