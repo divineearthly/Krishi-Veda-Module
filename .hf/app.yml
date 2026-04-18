@@ -1,0 +1,11 @@
+# Hugging Face Space Configuration
+
+title: Krishi-Veda
+
+description: A module for agricultural insights and predictions.
+
+port: 7860
+
+sdk: docker
+
+hardware: cpu-basic
