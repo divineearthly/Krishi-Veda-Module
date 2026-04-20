@@ -206,6 +206,7 @@ Divine Earthly · Silchar, Assam, India · PIN 788005
 - 📱 +91 90857 51162
 - 🐙 [github.com/divineearthly](https://github.com/divineearthly)
 - 📊 [kaggle.com/divinesouljoy](https://kaggle.com/divinesouljoy)
+https://huggingface.co/spaces/divinesouljoy/Krishi-Veda
 
 > *"Vasudhaiva Kutumbakam — The Earth is One Family.  
 > Sovereign AI rooted in Vedic wisdom. Built for Bharat's farmers."*
