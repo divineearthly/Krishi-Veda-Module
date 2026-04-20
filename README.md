@@ -125,7 +125,7 @@ python main.py
 ```
 
 ### Option 4 — HuggingFace Spaces
-> 🔗 Deployment coming soon at `huggingface.co/spaces/divineearthly/krishi-veda`
+> 🔗 Deployed `https://huggingface.co/spaces/divinesouljoy/Krishi-Veda`
 
 ---
 
