@@ -1,13 +1,5 @@
+
 fastapi
 uvicorn
 pydantic
-numpy
-httpx
-aiohttp
-websockets
-gunicorn
-torch
-transformers
-accelerate
-bitsandbytes
-psutil
+sqlite3
