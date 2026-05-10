@@ -40,18 +40,16 @@ class SoilRequest(BaseModel):
 
 
 class PlanRequest(BaseModel):
-    lat: float
-    lon: float
+    lat: Optional[float] = None
+    lon: Optional[float] = None
     sensor_data: Optional[List[float]] = None
     soil_type: Optional[str] = "General"
     growth_stage: Optional[int] = 0
     paksha: Optional[str] = None
     use_slm: Optional[bool] = False   # set True to request SLM advice
-
-
-class SyncRequest(BaseModel):
-    lat: float
-    lon: float
+    weather: Optional[dict] = None      # optional pre-fetched weather
+    ndvi: Optional[dict] = None         # optional pre-fetched NDVI
+    target_language: Optional[str] = None  # language code for localization
     force: Optional[bool] = False
 
 
@@ -203,6 +201,56 @@ async def get_vedic_plan(req: PlanRequest):
 
 
 # ── Weather + NDVI ───────────────────────────────────────────────────────────
+
+# ── Languages ─────────────────────────────────────────────────────────────────
+
+@app.get("/api/v1/languages")
+async def get_languages():
+    """Return list of supported languages and their full dictionaries."""
+    import json
+    languages = []
+    if os.path.isdir(LOCALIZATION_DIR):
+        for fname in sorted(os.listdir(LOCALIZATION_DIR)):
+            if fname.endswith(".json"):
+                code = fname.replace(".json", "")
+                try:
+                    with open(os.path.join(LOCALIZATION_DIR, fname), "r") as f:
+                        data = json.load(f)
+                    languages.append({
+                        "code": code,
+                        "name": data.get("_language_name", code),
+                        "dict": data
+                    })
+                except Exception:
+                    pass
+    return {"languages": languages}
+
+
+@app.get("/api/v1/languages/{lang_code}")
+async def get_language_dict(lang_code: str):
+    """Return a single language dictionary JSON."""
+    import json
+    path = os.path.join(LOCALIZATION_DIR, f"{lang_code}.json")
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail=f"Language {lang_code} not found")
+    with open(path, "r") as f:
+        return json.load(f)
+
+
+# ── Offline cached plan retrieval (used by service worker) ───────────────────
+
+@app.get("/api/v1/plan/cached/{body_hash}")
+async def get_cached_plan(body_hash: str):
+    """
+    Returns a previously cached /api/v1/plan response. Used by the service
+    worker when offline. The service worker intercepts this and returns
+    from its cache. If reached directly, returns a hint.
+    """
+    return Response(
+        content='{"message": "This endpoint is used by the service worker for offline caching. Use POST /api/v1/plan instead."}',
+        media_type="application/json",
+        headers={"X-Krishi-Veda-Offline": "false"},
+    )
 
 @app.get("/api/v1/weather")
 async def weather_endpoint(lat: float, lon: float):
