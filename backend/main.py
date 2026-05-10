@@ -39,6 +39,11 @@ class SoilRequest(BaseModel):
     paksha: Optional[str] = "waxing"
 
 
+class SyncRequest(BaseModel):
+    lat: float
+    lon: float
+    force: Optional[bool] = False
+
 class PlanRequest(BaseModel):
     lat: Optional[float] = None
     lon: Optional[float] = None
@@ -50,6 +55,11 @@ class PlanRequest(BaseModel):
     weather: Optional[dict] = None      # optional pre-fetched weather
     ndvi: Optional[dict] = None         # optional pre-fetched NDVI
     target_language: Optional[str] = None  # language code for localization
+
+class SyncRequest(BaseModel):
+    lat: float
+    lon: float
+    force: Optional[bool] = False
     force: Optional[bool] = False
 
 
