@@ -1,0 +1,25 @@
+[app]
+title = KrishiVeda
+package.name = krishiveda
+package.domain = org.divinearthly
+source.dir = .
+source.include_exts = py,png,jpg,kv,atlas,json,js,css,html,db,gguf,so
+version = 1.0.0
+requirements = python3,fastapi,uvicorn,sqlite3,aiofiles,psutil,httpx
+orientation = portrait
+osx.python_version = 3
+osx.kivy_version = 2.2.1
+fullscreen = 0
+android.api = 30
+android.minapi = 24
+android.ndk = 25b
+android.gradle_dependencies = 
+android.manifest.launch_mode = singleTop
+android.manifest.permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
+android.allow_backup = True
+android.presplash_color = #2d6a4f
+android.splash_color = #2d6a4f
+
+[buildozer]
+log_level = 2
+warn_on_root = 1

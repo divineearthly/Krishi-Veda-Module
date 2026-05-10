@@ -21,6 +21,7 @@ import sys
 import threading
 import time
 from typing import Optional
+import subprocess
 
 # ── Vedic Link imports (always available) ────────────────────────────────────
 from backend.core.vedic_kernels_bridge import (
@@ -33,9 +34,8 @@ from backend.core.vedic_kernels_bridge import (
 
 # ── Config ───────────────────────────────────────────────────────────────────
 PREFERRED_MODELS = [
-    "Qwen/Qwen2.5-0.5B-Instruct",   # ~500M params, ~350MB 4-bit
-    "Qwen/Qwen2-0.5B-Instruct",
-    "microsoft/phi-1_5",             # 1.3B params, ~650MB 4-bit
+    "divinesouljoy/VedaRta-0.5B",
+    "Qwen/Qwen2.5-0.5B-Instruct",
 ]
 MODEL_CACHE_DIR = os.environ.get(
     "SLM_CACHE_DIR",
@@ -70,66 +70,32 @@ def _check_prerequisites() -> tuple[bool, str]:
             return False, f"Insufficient RAM: {ram_gb:.1f} GB available"
     except ImportError:
         pass  # psutil optional
-    return True, ""
-
-
 def _load_model() -> bool:
-    """Attempt to load the smallest available 4-bit quantized model."""
+    """Locate llama-simple-chat binary and GGUF model. No torch needed."""
     global _model, _tokenizer, _model_name, _load_failed_reason
 
-    ok, reason = _check_prerequisites()
-    if not ok:
-        _load_failed_reason = reason
+    LLAMA_BIN = os.path.expanduser(
+        "~/llama.cpp/build/bin/llama-simple-chat"
+    )
+    GGUF_MODEL = os.path.expanduser(
+        "~/Divine-Earthly-ASI/VedaRta/vedic_model-Q4_K_M.gguf"
+    )
+
+    if not os.path.isfile(LLAMA_BIN):
+        _load_failed_reason = f"llama-simple-chat not found at {LLAMA_BIN}"
+        print(f"[SLM] {_load_failed_reason}")
         return False
 
-    import torch
-    from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+    if not os.path.isfile(GGUF_MODEL):
+        _load_failed_reason = f"GGUF model not found at {GGUF_MODEL}"
+        print(f"[SLM] {_load_failed_reason}")
+        return False
 
-    bnb_config = None
-    try:
-        import bitsandbytes  # noqa: F401
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.float32,
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_quant_type="nf4",
-        )
-    except ImportError:
-        pass  # Will load in float32 without quantization
-
-    os.makedirs(MODEL_CACHE_DIR, exist_ok=True)
-
-    for model_id in PREFERRED_MODELS:
-        try:
-            print(f"[SLM] Attempting to load: {model_id}")
-            tokenizer = AutoTokenizer.from_pretrained(
-                model_id, cache_dir=MODEL_CACHE_DIR, trust_remote_code=True
-            )
-            kwargs = dict(
-                cache_dir=MODEL_CACHE_DIR,
-                device_map="cpu",
-                trust_remote_code=True,
-                low_cpu_mem_usage=True,
-            )
-            if bnb_config:
-                kwargs["quantization_config"] = bnb_config
-            else:
-                kwargs["torch_dtype"] = torch.float32
-
-            model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
-            model.eval()
-            _model = model
-            _tokenizer = tokenizer
-            _model_name = model_id
-            print(f"[SLM] Loaded: {model_id}")
-            return True
-        except Exception as e:
-            print(f"[SLM] Failed {model_id}: {e}")
-            gc.collect()
-            continue
-
-    _load_failed_reason = "All model candidates failed to load"
-    return False
+    _model = LLAMA_BIN
+    _tokenizer = GGUF_MODEL
+    _model_name = "divinesouljoy/VedaRta-0.5B-GGUF (llama.cpp)"
+    print(f"[SLM] Using llama.cpp: {_model} with {_tokenizer}")
+    return True
 
 
 def ensure_loaded(blocking: bool = False) -> bool:
@@ -139,10 +105,8 @@ def ensure_loaded(blocking: bool = False) -> bool:
     If blocking=True: waits until load completes (only use in background threads).
     """
     global _load_attempted
-    # Fast path: model already loaded
     if _model is not None:
         return True
-    # Non-blocking: don't wait for the lock
     if not blocking:
         return False
     with _load_lock:
@@ -216,23 +180,36 @@ def _vedic_context_block(sensor_data: list, paksha: str = "waxing") -> tuple[str
 # ── SLM Inference ────────────────────────────────────────────────────────────
 
 def _slm_infer(prompt: str) -> str:
-    """Run the loaded SLM synchronously."""
-    import torch
-    inputs = _tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
-    with torch.no_grad():
-        out = _model.generate(
-            **inputs,
-            max_new_tokens=MAX_NEW_TOKENS,
-            do_sample=False,
-            temperature=1.0,
-            pad_token_id=_tokenizer.eos_token_id,
+    """Run inference via llama-simple-chat subprocess."""
+    global _model, _tokenizer
+
+    if _model is None or _tokenizer is None:
+        return ""
+
+    try:
+        proc = subprocess.run(
+            [_model, "-m", _tokenizer, "-p", prompt,
+             "--ctx-size", "512", "--threads", "2",
+             "--temp", "0.7", "-n", str(MAX_NEW_TOKENS)],
+            capture_output=True, text=True, timeout=120
         )
-    full = _tokenizer.decode(out[0], skip_special_tokens=True)
-    # Strip the prompt prefix
-    answer = full[len(_tokenizer.decode(inputs["input_ids"][0], skip_special_tokens=True)):].strip()
-    return answer or full.strip()
-
-
+        output = proc.stdout.strip()
+        if proc.returncode != 0:
+            print(f"[SLM] llama error: {proc.stderr}")
+            return ""
+        # Strip the prompt echo from output if present
+        if output.startswith(prompt):
+            output = output[len(prompt):].strip()
+        return output
+    except FileNotFoundError:
+        print("[SLM] llama-simple-chat not found")
+        return ""
+    except subprocess.TimeoutExpired:
+        print("[SLM] Inference timed out")
+        return ""
+    except Exception as e:
+        print(f"[SLM] Inference error: {e}")
+        return ""
 def _rule_based_fallback(sensor_data: list, soil_type: str,
                           paksha: str, weather: dict, ndvi: dict,
                           vedic: dict) -> str:

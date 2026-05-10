@@ -222,3 +222,22 @@ MIT License · © 2026 Divine Earthly / Joydeep Das
 <p align="center">
   <b>🌾 Krishi-Veda Module · Divine Earthly · Built in Assam, for India</b>
 </p>
+
+---
+
+## Environment Variables
+
+Set these secrets on HuggingFace Spaces (Settings → Repository Secrets) or in your `.env` file:
+
+| Variable | Required | Description |
+|---|---|---|
+| `OPENWEATHER_API_KEY` | Optional | OpenWeatherMap API key for live weather data. Falls back to default values if not set. |
+| `NASA_EARTHDATA_TOKEN` | Optional | NASA Earthdata token for NDVI satellite data. Falls back to default values if not set. |
+| `SLM_CACHE_DIR` | Optional | Path to cache SLM models. Default: `~/.cache/krishi_veda_slm` |
+| `PORT` | Optional | Server port. Default: `7860` |
+
+**Example (HuggingFace Spaces):**
+1. Go to your Space → Settings → Repository Secrets
+2. Add `OPENWEATHER_API_KEY` with your key
+3. Add `NASA_EARTHDATA_TOKEN` with your token
+4. Restart the Space

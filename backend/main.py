@@ -99,7 +99,7 @@ async def trigger_sync(req: SyncRequest, background_tasks: BackgroundTasks):
     and caches it in the local SQLite DB.
     Can also be triggered from the browser before going offline.
     """
-    result = await sync_location(req.lat, req.lon, force=req.force)
+    result = await sync_data_for_location(req.lat, req.lon, force=req.force)
     return {
         "message": "Sync complete. Data cached for offline use.",
         "result": result,

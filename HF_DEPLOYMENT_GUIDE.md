@@ -24,7 +24,7 @@ This guide outlines the steps needed to deploy the Krishi-Veda Module to Hugging
 ### Step 2: Create a New Space on Hugging Face
 1. Go to the [Hugging Face Spaces](https://huggingface.co/spaces) page.
 2. Click on the "New Space" button.
-3. Fill in the space name, select the visibility (public/private), and choose the SDK (Gradio or Streamlit).
+3. Fill in the space name, select the visibility (public/private), and choose "Docker" as the SDK (auto-detected from Dockerfile).
 4. Click "Create Space."
 
 ### Step 3: Upload Your Files
