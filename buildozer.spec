@@ -3,7 +3,7 @@ title = KrishiVeda
 package.name = krishiveda
 package.domain = org.divinearthly
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,json,js,css,html,db,gguf,so
+source.include_exts = py,png,jpg,kv,atlas,json,js,css,html,db,so,bin
 version = 1.0.0
 requirements = python3,fastapi,uvicorn,sqlite3,aiofiles,psutil,httpx
 orientation = portrait
@@ -19,6 +19,9 @@ android.manifest.permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE,R
 android.allow_backup = True
 android.presplash_color = #2d6a4f
 android.splash_color = #2d6a4f
+
+# APK downloads VedaRta GGUF from HuggingFace CDN on first launch
+# Model cached in app storage for offline use thereafter
 
 [buildozer]
 log_level = 2
