@@ -1,50 +1,29 @@
-# Python
+# Binaries
+*.exe
+*.out
+*.o
+*.so
+*.dylib
+*.bin
+*.elf
+*.ko
+divine_kernel
+benchmark_test
+*.tar.gz
+*.zip
+*.db
+*.sqlite
+*.sqlite3
+*.wav
+*.mp3
+*.mp4
+*.ogg
+*.tgz
+.replit
+replit.md
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-.Python
 *.egg-info/
 dist/
 build/
-.eggs/
-
-# Virtual environments
-.venv/
-venv/
-env/
-
-# Environment / secrets — NEVER commit API keys
-.env
-.env.*
-*.env
-
-# Model cache (large, re-downloaded on deploy)
-.model_cache/
-~/.cache/krishi_veda_slm/
-
-# Compiled C++ artifacts (rebuilt by Dockerfile / Makefile)
-*.so
-*.o
-*.a
-
-# Database (local dev only — prod uses its own DB)
-# krishi_veda_offline.db  ← keep: ships with regional seed data
-
-# OS / editor
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Logs
-*.log
-logs/
-/tmp/logs/
-
-# Replit internals
-.cache/
-.upm/
-.local/
+.ipynb_checkpoints/
