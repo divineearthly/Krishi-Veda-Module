@@ -1,25 +1,16 @@
-FROM python:3.10-slim
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        g++ \
-        build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
+FROM python:3.11-slim-bookworm AS builder
 WORKDIR /app
-
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --user -r requirements.txt
 
+FROM python:3.11-slim-bookworm
+WORKDIR /app
+COPY --from=builder /root/.local /root/.local
 COPY . .
-
-RUN g++ -Os -fPIC -shared -std=c++14 \
-        -o vedic_core/vedic_kernels.so \
-        vedic_core/vedic_kernels.cpp \
-        -lm && \
-    mkdir -p vedic_engine/kernels && \
-    cp vedic_core/vedic_kernels.so vedic_engine/kernels/vedic_kernels.so
-
-ENV PORT=7860
-EXPOSE 7860
-
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "7860"]
+RUN pip install --no-cache-dir bitsandbytes-cpu
+ENV PATH=/root/.local/bin:$PATH
+ENV KRISHI_MODE=edge
+ENV OFFLINE_DB_PATH=/data/krishi_veda_offline.db
+VOLUME ["/data"]
+EXPOSE 8000
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
