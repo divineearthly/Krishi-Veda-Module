@@ -124,5 +124,20 @@ function displayResult(data) {
 
 function setLang(l) { lang = l; }
 </script>
+
+<script>
+// Auto-detect location for Silchar
+document.getElementById('lat')?.value = '24.81';
+document.getElementById('lon')?.value = '92.80';
+
+// Override fetch to use relative URLs on HF Spaces
+const originalFetch = fetch;
+fetch = function(url, options) {
+  if (url.startsWith('/')) {
+    return originalFetch(url, options);
+  }
+  return originalFetch(url, options);
+};
+</script>
 </body>
 </html>
