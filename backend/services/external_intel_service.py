@@ -24,6 +24,8 @@ def _current_paksha() -> str:
 
 def _fallback_weather(lat: float, lon: float) -> dict:
     """Deterministic fallback based on lat/lon zone."""
+    if lat is None: lat = 24.81
+    if lon is None: lon = 92.80
     month = datetime.utcnow().month
     # India climate heuristics
     if 6 <= month <= 9:
@@ -83,6 +85,8 @@ async def get_weather(lat: float, lon: float) -> dict:
 
 def _fallback_ndvi(lat: float, lon: float) -> dict:
     """Synthetic NDVI based on geography/season."""
+    if lat is None: lat = 24.81
+    if lon is None: lon = 92.80
     month = datetime.utcnow().month
     # Gangetic plains (20-27N, 75-90E) have high NDVI in monsoon
     geo_factor = max(0, 1 - abs(lat - 23) / 20) * max(0, 1 - abs(lon - 82) / 30)

@@ -41,7 +41,7 @@ MODEL_CACHE_DIR = os.environ.get(
     "SLM_CACHE_DIR",
     os.path.join(os.path.expanduser("~"), ".cache", "krishi_veda_slm")
 )
-MAX_NEW_TOKENS = 220
+MAX_NEW_TOKENS = 80
 AHIMSA_THRESHOLD = 75.0
 
 # ── Module-level state ───────────────────────────────────────────────────────
@@ -189,7 +189,7 @@ def _slm_infer(prompt: str) -> str:
     try:
         # llama-simple takes prompt as positional argument after flags
         proc = subprocess.run(
-            [_model, "-m", _tokenizer, "-n", str(MAX_NEW_TOKENS), "--temp", "0.7", prompt],
+            [_model, "-m", _tokenizer, "-n", str(MAX_NEW_TOKENS), "--temp", "0.7", "--cache-prompt", prompt],
             capture_output=True, text=True, timeout=120
         )
         output = proc.stdout.strip()
