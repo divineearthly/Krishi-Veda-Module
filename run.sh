@@ -5,7 +5,7 @@ cd "$SCRIPT_DIR"
 echo "Krishi-Veda-Module — Vedic Farming AI"
 echo "Ahimsa-108 Protocol ACTIVE"
 
-if [ ! -f "/root/llama.cpp/build/bin/llama-simple" ]; then
+if [ ! -f "/root/llama.cpp/build/bin/llama-cli" ]; then
     echo "ERROR: llama-simple not found"
     exit 1
 fi

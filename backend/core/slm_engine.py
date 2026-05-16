@@ -71,18 +71,18 @@ def _check_prerequisites() -> tuple[bool, str]:
     except ImportError:
         pass  # psutil optional
 def _load_model() -> bool:
-    """Locate llama-simple binary and GGUF model. No torch needed."""
+    """Locate llama-completion binary and GGUF model. No torch needed."""
     global _model, _tokenizer, _model_name, _load_failed_reason
 
     LLAMA_BIN = os.path.expanduser(
-        "/root/llama.cpp/build/bin/llama-cli"
+        "/root/llama.cpp/build/bin/llama-completion"
     )
     GGUF_MODEL = os.path.expanduser(
         "/data/data/com.termux/files/home/vedic_model.gguf"
     )
 
     if not os.path.isfile(LLAMA_BIN):
-        _load_failed_reason = f"llama-simple not found at {LLAMA_BIN}"
+        _load_failed_reason = f"llama-completion not found at {LLAMA_BIN}"
         print(f"[SLM] {_load_failed_reason}")
         return False
 
@@ -180,70 +180,23 @@ def _vedic_context_block(sensor_data: list, paksha: str = "waxing") -> tuple[str
 # ── SLM Inference ────────────────────────────────────────────────────────────
 
 def _slm_infer(prompt: str) -> str:
-    """Run inference via llama-simple subprocess."""
+    """Run inference via llama-completion with piped input."""
     global _model, _tokenizer
-
     if _model is None or _tokenizer is None:
         return ""
-
     try:
-        # llama-simple takes prompt as positional argument after flags
-        proc = subprocess.run(
-            [_model, "-m", _tokenizer, "-p", prompt, "-n", str(MAX_NEW_TOKENS), "--temp", "0.7", "--log-disable"],
-            capture_output=True, text=True, timeout=120
-        )
+        cmd = f'echo "{prompt}" | {_model} -m {_tokenizer} -n {MAX_NEW_TOKENS} --temp 0.7 2>/dev/null'
+        proc = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=60)
         output = proc.stdout.strip()
-        if proc.returncode != 0:
-            print(f"[SLM] llama error: {proc.stderr}")
-            return ""
-        # llama-simple echoes the flags in output, extract actual response
-        # Output format is: flags + prompt + generated_text
-        # Find where the actual generation starts (after the numbers)
-        lines = output.split('\n')
-        # Filter out lines that look like flag echoes
-        real_lines = [l for l in lines if not l.startswith('-') and l.strip()]
-        if real_lines:
-            return '\n'.join(real_lines)
-        return output
-    except FileNotFoundError:
-        print("[SLM] llama-simple not found")
-        return ""
-    except subprocess.TimeoutExpired:
-        print("[SLM] Inference timed out")
-        return ""
+        # llama-completion outputs: "user\n<prompt>\nassistant\n<response>"
+        if "assistant" in output:
+            parts = output.split("assistant", 1)
+            if len(parts) > 1:
+                return parts[1].strip()[:800]
+        return output[:800]
     except Exception as e:
-        print(f"[SLM] Inference error: {e}")
+        print(f"[SLM] Error: {e}")
         return ""
-def _rule_based_fallback(sensor_data: list, soil_type: str,
-                          paksha: str, weather: dict, ndvi: dict,
-                          vedic: dict) -> str:
-    """Used when SLM model is unavailable."""
-    ph = sensor_data[0] if sensor_data else 6.5
-    n, p, k = (sensor_data[1:4] + [35, 28, 40])[:3]
-    status = "Critical" if vedic["ahimsa_triggered"] else ("Good" if vedic["wellness"] > 65 else "Moderate")
-    lines = [
-        f"[Rule-Based Reasoning Engine]",
-        f"Soil Status: {status} (Wellness {vedic['wellness']:.0f}/100).",
-    ]
-    if vedic["ahimsa_triggered"]:
-        lines += [
-            "AHIMSA-108: Critical soil stress detected.",
-            "→ Apply Panchgavya: mix 5L cow dung, 3L cow urine, 2L milk, 2L curd, 500g ghee.",
-            "→ Ferment 7 days. Spray 3% solution at 300L/acre every 15 days.",
-            "→ No chemical fertilizers until wellness exceeds 50.",
-        ]
-    else:
-        if vedic["deficit_ppm"] > 15:
-            lines.append(f"→ NPK deficit: {vedic['deficit_ppm']:.1f} ppm. Apply balanced NPK 10-26-26.")
-        if vedic["liming_kg_ha"] > 100:
-            lines.append(f"→ pH {ph:.1f} too acidic. Apply {vedic['liming_kg_ha']:.0f} kg/ha lime.")
-        sc = vedic["anurupyena"]
-        lines.append(f"→ Proportional inputs: N×{sc['N']:.2f}, P×{sc['P']:.2f}, K×{sc['K']:.2f}")
-    moon = "Shukla Paksha (sow now)" if paksha == "waxing" else "Krishna Paksha (harvest/plough now)"
-    lines.append(f"Vedic Timing: {moon}")
-    return "\n".join(lines)
-
-
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def generate_advice(
