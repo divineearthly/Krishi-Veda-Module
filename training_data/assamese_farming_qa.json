@@ -1,0 +1,62 @@
+[
+  {
+    "q": "ধান খেতিত কি ধৰণৰ মাটি ভাল?",
+    "a": "ধান খেতিৰ বাবে পলসুৱা দোআঁশ মাটি সৰ্বোত্তম। মাটিৰ pH 5.5-6.5 হ'ব লাগে। শিলচৰ অঞ্চলত ৰঞ্জিত আৰু বাহাদুৰ জাত উত্তম।",
+    "en_q": "What soil is good for rice?",
+    "en_a": "Alluvial loamy soil with pH 5.5-6.5 is best for rice. Ranjit and Bahadur varieties excel in Silchar region."
+  },
+  {
+    "q": "পোকা-পতংগৰ বাবে কি জৈৱিক দৰব ব্যৱহাৰ কৰিম?",
+    "a": "পঞ্চগব্য (৫ কেজি গোবৰ, ৩ লিটাৰ গোমূত্ৰ, ২ লিটাৰ গাখীৰ, ২ লিটাৰ দৈ, ৫০০ গ্ৰাম ঘিঁউ) ৭ দিন fermentation কৰি ৩% দ্ৰৱ ছটিয়ালে পোকা নিয়ন্ত্ৰণ হয়।",
+    "en_q": "What organic remedy for pests?",
+    "en_a": "Panchgavya (5kg cow dung, 3L urine, 2L milk, 2L curd, 500g ghee) fermented 7 days, spray 3% solution controls pests."
+  },
+  {
+    "q": "ধান ৰোৱাৰ উপযুক্ত সময় কেতিয়া?",
+    "a": "শুক্ল পক্ষ (জোন বাঢ়ি থকা সময়) ধান ৰোৱাৰ বাবে সৰ্বোত্তম। জুন-জুলাই মাহত বাৰিষাৰ আৰম্ভণিতে ৰোৱা উচিত। আহিন-মাঘ মাহত চপাব পাৰে।",
+    "en_q": "When to plant rice?",
+    "en_a": "Shukla Paksha (waxing moon) is best for rice planting. June-July at monsoon onset. Harvest in October-January."
+  },
+  {
+    "q": "মাটিত সাৰ কিমান দিব লাগে?",
+    "a": "নিখিলম সূত্ৰ অনুসৰি NPK ৰ পৰিমাণ: নাইট্ৰ'জেন ৪০ ppm, ফছফৰাছ ৩০ ppm, পটেছিয়াম ৪০ ppm ৰ তলত থাকিলে জৈৱিক সাৰ (vermicompost, green manure) দিব লাগে। কেতিয়াও ৰাসায়নিক সাৰ ব্যৱহাৰ নকৰিব।",
+    "en_q": "How much fertilizer?",
+    "en_a": "Per Nikhilam Sutra: if N<40ppm, P<30ppm, K<40ppm, use organic (vermicompost, green manure). Never use chemical fertilizers."
+  },
+  {
+    "q": "মৰাপাট খেতি কেতিয়া কৰা ভাল?",
+    "a": "মাৰ্চ-এপ্ৰিল মাহত মৰাপাট সিঁচা উত্তম। JRO-524 আৰু JRO-8432 জাত শিলচৰ অঞ্চলত ভাল হয়। জুলাই-আগষ্ট মাহত চপাব পাৰে। জৈৱিক সাৰ হিচাপে নিমখ পিঠা ব্যৱহাৰ কৰক।",
+    "en_q": "When to grow jute?",
+    "en_a": "Sow jute in March-April. JRO-524 and JRO-8432 varieties do well in Silchar. Harvest July-August. Use neem cake as organic fertilizer."
+  },
+  {
+    "q": "সৰিয়হ খেতিৰ বাবে মাটি কেনেকুৱা হ'ব লাগে?",
+    "a": "সৰিয়হৰ বাবে ৬.০-৭.৫ pH ৰ মাটি ভাল। ৰবি শস্য — অক্টোবৰ-নৱেম্বৰত সিঁচা, ফেব্ৰুৱাৰী-মাৰ্চত চপাব। TS-46, বৰুণা, পুষা বল্ড জাত ভাল। সৰিয়হ পিঠা জৈৱিক সাৰ হিচাপে ব্যৱহাৰ কৰক।",
+    "en_q": "How to grow mustard?",
+    "en_a": "Mustard needs pH 6.0-7.5 soil. Rabi crop - sow Oct-Nov, harvest Feb-Mar. TS-46, Varuna, Pusa Bold varieties. Use mustard cake as organic fertilizer."
+  },
+  {
+    "q": "আমাৰ মাটিৰ স্বাস্থ্য কেনেকুৱা?",
+    "a": "গুণকসমুচ্চয় সূত্ৰৰে মাটিৰ wellness score গণনা কৰা হয়। pH, NPK, আৰ্দ্ৰতা, আৰু জৈৱিক পদাৰ্থৰ পৰিমাণৰ ভিত্তিত 0-100 স্ক'ৰ দিয়া হয়। 60ৰ তলত থাকিলে পঞ্চগব্য প্ৰয়োগ কৰক।",
+    "en_q": "How is my soil health?",
+    "en_a": "Gunakasamuccaya Sutra computes soil wellness score from pH, NPK, moisture, organic matter. Score below 60 needs Panchgavya application."
+  },
+  {
+    "q": "জোনৰ কি অৱস্থাত খেতি কৰা ভাল?",
+    "a": "শুক্ল পক্ষ (জোন বাঢ়ি থকা সময়) বীজ সিঁচা আৰু ৰোৱাৰ বাবে উত্তম। কৃষ্ণ পক্ষ (জোন কমি থকা সময়) চপোৱা আৰু হাল বোৱাৰ বাবে ভাল। এইটো পৰাৱৰ্ত্য সূত্ৰৰ পৰামৰ্শ।",
+    "en_q": "Which moon phase for farming?",
+    "en_a": "Shukla Paksha (waxing) best for sowing. Krishna Paksha (waning) best for harvesting and ploughing. Per Paravartya Sutra guidance."
+  },
+  {
+    "q": "পানী কম হ'লে কি খেতি কৰিম?",
+    "a": "পানী কম হ'লে সৰিয়হ, মগু, মাহ জাতীয় ৰবি শস্য কৰক। এইবোৰত কম পানী লাগে। অথবা বাঁহ খেতিও ভাল বিকল্প — ইয়াত বেছি পানীৰ প্ৰয়োজন নহয়।",
+    "en_q": "What to grow with less water?",
+    "en_a": "With less water, grow mustard, pulses (rabi crops). Bamboo is also a good option needing minimal water."
+  },
+  {
+    "q": "ৰাসায়নিক সাৰ কিয় ব্যৱহাৰ কৰিব নালাগে?",
+    "a": "অহিংসা-১০৮ প্ৰটকল অনুসৰি ৰাসায়নিক সাৰে মাটিৰ জীৱাণু নষ্ট কৰে, পানী প্ৰদূষিত কৰে, আৰু খাদ্যত বিষক্ৰিয়া সৃষ্টি কৰে। পঞ্চগব্যৰ দৰে জৈৱিক সাৰে মাটিক জীৱন্ত ৰাখে আৰু উৎপাদন দীৰ্ঘম্যাদীভাৱে বঢ়ায়।",
+    "en_q": "Why avoid chemical fertilizers?",
+    "en_a": "Per Ahimsa-108 Protocol: chemicals kill soil microbes, pollute water, create toxicity. Panchgavya keeps soil alive and increases long-term yield."
+  }
+]

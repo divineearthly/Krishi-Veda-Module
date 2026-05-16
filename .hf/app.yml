@@ -1,11 +1,17 @@
 # Hugging Face Space Configuration
-
 title: Krishi-Veda
-
-description: A module for agricultural insights and predictions.
-
-port: 7860
-
+emoji: 🌾
+colorFrom: green
+colorTo: yellow
 sdk: docker
+app_port: 8000
+pinned: false
+license: mit
 
-hardware: cpu-basic
+description: |
+  Offline Vedic Agricultural AI for Indian Farmers.
+  - 8 Krishi-Sutras (C++ ARM64 kernel)
+  - Ahimsa-108 Protocol (blocks chemical fertilizers)
+  - llama.cpp + Qwen2.5-0.5B for farming advice
+  - Multilingual: Hindi, Bengali, Assamese, English
+  - Built entirely on Android phone with Termux

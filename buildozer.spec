@@ -5,7 +5,7 @@ package.domain = org.divinearthly
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,js,css,html,db,so,bin
 version = 1.0.0
-requirements = python3,fastapi,uvicorn,sqlite3,aiofiles,psutil,httpx
+requirements = python3,fastapi,uvicorn,pydantic,aiofiles,psutil,httpx,hostpython3
 orientation = portrait
 osx.python_version = 3
 osx.kivy_version = 2.2.1
@@ -26,3 +26,8 @@ android.splash_color = #2d6a4f
 [buildozer]
 log_level = 2
 warn_on_root = 1
+
+# ARM64 optimizations
+android.arch = arm64-v8a
+android.gradle_dependencies = androidx.core:core:1.9.0
+p4a.branch = develop
