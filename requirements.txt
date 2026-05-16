@@ -1,8 +1,6 @@
 fastapi
 uvicorn
 pydantic
-transformers>=4.37.0
-torch --index-url https://download.pytorch.org/whl/cpu
 psutil
 httpx
 aiofiles
