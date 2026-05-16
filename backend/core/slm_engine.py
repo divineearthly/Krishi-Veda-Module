@@ -75,7 +75,7 @@ def _load_model() -> bool:
     global _model, _tokenizer, _model_name, _load_failed_reason
 
     LLAMA_BIN = os.path.expanduser(
-        "/root/llama.cpp/build/bin/llama-simple"
+        "/root/llama.cpp/build/bin/llama-cli"
     )
     GGUF_MODEL = os.path.expanduser(
         "/data/data/com.termux/files/home/vedic_model.gguf"
@@ -189,7 +189,7 @@ def _slm_infer(prompt: str) -> str:
     try:
         # llama-simple takes prompt as positional argument after flags
         proc = subprocess.run(
-            [_model, "-m", _tokenizer, "-n", str(MAX_NEW_TOKENS), "--temp", "0.7", "--cache-prompt", prompt],
+            [_model, "-m", _tokenizer, "-p", prompt, "-n", str(MAX_NEW_TOKENS), "--temp", "0.7", "--log-disable"],
             capture_output=True, text=True, timeout=120
         )
         output = proc.stdout.strip()
