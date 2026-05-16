@@ -71,18 +71,18 @@ def _check_prerequisites() -> tuple[bool, str]:
     except ImportError:
         pass  # psutil optional
 def _load_model() -> bool:
-    """Locate llama-simple-chat binary and GGUF model. No torch needed."""
+    """Locate llama-simple binary and GGUF model. No torch needed."""
     global _model, _tokenizer, _model_name, _load_failed_reason
 
     LLAMA_BIN = os.path.expanduser(
-        "~/llama.cpp/build/bin/llama-simple-chat"
+        "/root/llama.cpp/build/bin/llama-simple"
     )
     GGUF_MODEL = os.path.expanduser(
-        "~/Divine-Earthly-ASI/VedaRta/vedic_model-Q4_K_M.gguf"
+        "/data/data/com.termux/files/home/vedic_model.gguf"
     )
 
     if not os.path.isfile(LLAMA_BIN):
-        _load_failed_reason = f"llama-simple-chat not found at {LLAMA_BIN}"
+        _load_failed_reason = f"llama-simple not found at {LLAMA_BIN}"
         print(f"[SLM] {_load_failed_reason}")
         return False
 
@@ -180,29 +180,33 @@ def _vedic_context_block(sensor_data: list, paksha: str = "waxing") -> tuple[str
 # ── SLM Inference ────────────────────────────────────────────────────────────
 
 def _slm_infer(prompt: str) -> str:
-    """Run inference via llama-simple-chat subprocess."""
+    """Run inference via llama-simple subprocess."""
     global _model, _tokenizer
 
     if _model is None or _tokenizer is None:
         return ""
 
     try:
+        # llama-simple takes prompt as positional argument after flags
         proc = subprocess.run(
-            [_model, "-m", _tokenizer, "-p", prompt,
-             "--ctx-size", "512", "--threads", "2",
-             "--temp", "0.7", "-n", str(MAX_NEW_TOKENS)],
+            [_model, "-m", _tokenizer, "-n", str(MAX_NEW_TOKENS), "--temp", "0.7", prompt],
             capture_output=True, text=True, timeout=120
         )
         output = proc.stdout.strip()
         if proc.returncode != 0:
             print(f"[SLM] llama error: {proc.stderr}")
             return ""
-        # Strip the prompt echo from output if present
-        if output.startswith(prompt):
-            output = output[len(prompt):].strip()
+        # llama-simple echoes the flags in output, extract actual response
+        # Output format is: flags + prompt + generated_text
+        # Find where the actual generation starts (after the numbers)
+        lines = output.split('\n')
+        # Filter out lines that look like flag echoes
+        real_lines = [l for l in lines if not l.startswith('-') and l.strip()]
+        if real_lines:
+            return '\n'.join(real_lines)
         return output
     except FileNotFoundError:
-        print("[SLM] llama-simple-chat not found")
+        print("[SLM] llama-simple not found")
         return ""
     except subprocess.TimeoutExpired:
         print("[SLM] Inference timed out")
@@ -260,7 +264,7 @@ def generate_advice(
     grounding_text, vedic = _vedic_context_block(sensor_data, paksha)
 
     # ── Step 2: Attempt SLM inference ────────────────────────────────────────
-    slm_ready = ensure_loaded()
+    slm_ready = ensure_loaded(blocking=True)
 
     if slm_ready:
         temp = weather.get("temperature_c", 28)
