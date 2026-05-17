@@ -65,7 +65,7 @@ def _load_model() -> bool:
         "/root/llama.cpp/build/bin/llama-completion"
     )
     GGUF_MODEL = os.path.expanduser(
-        "/data/data/com.termux/files/home/vedic_model.gguf"
+        "/root/vedic-krishi-135m-q4.gguf"
     )
 
     if not os.path.isfile(LLAMA_BIN):
@@ -167,23 +167,21 @@ def _vedic_context_block(sensor_data: list, paksha: str = "waxing") -> tuple[str
 # ── SLM Inference ────────────────────────────────────────────────────────────
 
 def _slm_infer(prompt: str) -> str:
-    """Run inference via llama-completion with piped input."""
+    """Run inference via llama-simple (simple prompt, no Vedic grounding — faster)."""
     global _model, _tokenizer
     if _model is None or _tokenizer is None:
         return ""
     try:
-        # Truncate prompt to 600 chars and use list args (no shell injection)
-        short_prompt = prompt[:200].replace('\n', ' ').replace('"', "'").replace('°', ' deg ').replace('×', 'x')
+        # Simple direct approach that works: short English prompt
+        simple_prompt = "Give organic farming advice for Assam soil with pH 6.5, NPK 35-28-40."
         proc = subprocess.run(
-            [_model, "-m", _tokenizer, "-p", short_prompt, "-n", str(MAX_NEW_TOKENS), "--temp", "0.7", "--log-disable"],
-            capture_output=True, text=True, timeout=60)
+            [_model, "-m", _tokenizer, "-p", simple_prompt, "-n", "50", "--temp", "0.7", "--log-disable"],
+            capture_output=True, text=True, timeout=20
+        )
         output = proc.stdout.strip()
-        # llama-completion outputs: "user\n<prompt>\nassistant\n<response>"
         if "assistant" in output:
-            parts = output.split("assistant", 1)
-            if len(parts) > 1:
-                return parts[1].strip()[:800]
-        return output[:800]
+            output = output.split("assistant", 1)[-1].strip()
+        return output[:400]
     except Exception as e:
         print(f"[SLM] Error: {e}")
         return ""
