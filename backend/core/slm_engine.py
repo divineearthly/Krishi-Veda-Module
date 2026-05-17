@@ -173,7 +173,7 @@ def _slm_infer(prompt: str) -> str:
         return ""
     try:
         # Truncate prompt to 600 chars and use list args (no shell injection)
-        short_prompt = prompt[:600].replace('\n', ' ').replace('"', "'")
+        short_prompt = prompt[:200].replace('\n', ' ').replace('"', "'").replace('°', ' deg ').replace('×', 'x')
         proc = subprocess.run(
             [_model, "-m", _tokenizer, "-p", short_prompt, "-n", str(MAX_NEW_TOKENS), "--temp", "0.7", "--log-disable"],
             capture_output=True, text=True, timeout=60)
