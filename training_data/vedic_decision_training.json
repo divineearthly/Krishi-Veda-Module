@@ -1,0 +1,46 @@
+[
+  {
+    "input": "Temperature: 34°C, Rainfall: 10mm this month, Soil moisture: 40%, Crop: rice, Growth stage: tillering",
+    "output": "CRITICAL: Rainfall deficit 70mm below normal for Silchar June. Soil moisture 40% is below 50% threshold. IMMEDIATE ACTION: Irrigate rice field with 5cm water depth. Apply mulch (rice straw) to reduce evaporation. If no irrigation available, apply Panchgavya 3% spray to improve drought tolerance. Monitor daily. Expected yield impact: -15% if not irrigated within 3 days."
+  },
+  {
+    "input": "Temperature: 28°C, Rainfall: 200mm this month, Humidity: 85%, Soil moisture: 80%",
+    "output": "OPTIMAL CONDITIONS: Temperature 28°C ideal for rice vegetative growth. Rainfall 200mm sufficient for kharif season. Soil moisture 80% excellent. Humidity 85% — watch for fungal diseases. RECOMMENDATION: Apply Trichoderma viride soil treatment as preventive. No irrigation needed. Good conditions for top-dressing with vermicompost 500 kg/ha."
+  },
+  {
+    "input": "Temperature: 38°C, Rainfall: 0mm for 15 days, Crop: mustard, Stage: flowering",
+    "output": "HEAT STRESS ALERT: 38°C exceeds mustard's maximum tolerance (35°C). Zero rainfall for 15 days. Flowering stage is most sensitive. URGENT: Irrigate immediately (2.5cm water). Spray Panchgavya 3% at evening to reduce heat stress. Apply mulch 5cm thick between rows. Expected flower drop: 20-30% if no action in 24 hours. Consider early harvest of whatever pods formed."
+  },
+  {
+    "input": "Soil test: N=25 ppm, P=18 ppm, K=35 ppm, pH=5.2, Organic Matter=1.2%",
+    "output": "SOIL DEFICIENCY DETECTED: N is 37% below ideal (40 ppm). P is 40% below ideal (30 ppm). K is 12% below ideal (40 ppm). pH 5.2 is acidic. Organic Matter critically low at 1.2%. COMPREHENSIVE PLAN: 1) Apply agricultural lime 500 kg/ha to raise pH to 6.0. 2) Apply vermicompost 3 ton/ha for N and organic matter. 3) Apply bone meal 200 kg/ha for P. 4) Apply wood ash 150 kg/ha for K. 5) After 15 days, apply Panchgavya 300L/acre. Re-test soil after 30 days. Expected improvement: pH 5.8-6.0, OM 1.8%, NPK near ideal within 2 months."
+  },
+  {
+    "input": "Soil test: N=42 ppm, P=32 ppm, K=38 ppm, pH=6.8, Organic Matter=3.5%",
+    "output": "EXCELLENT SOIL HEALTH: All nutrients near ideal (N:40, P:30, K:40). pH 6.8 is perfect for most crops. Organic Matter 3.5% is well above 2% minimum. Gunakasamuccaya wellness score: 92/100. RECOMMENDATION: Maintain with Panchgavya 300L/acre every 30 days. No amendments needed this season. This soil can support intensive cropping. Suitable for high-value crops like organic vegetables."
+  },
+  {
+    "input": "NDVI dropped from 0.65 to 0.38 in 10 days, Crop: rice, Stage: booting, Weather: humid 85%",
+    "output": "VILOKANAM ANOMALY DETECTED: NDVI decline of 0.27 in 10 days indicates crop stress. Rate of decline suggests possible blast disease or stem borer attack (common in humid Silchar conditions at booting stage). FIELD CHECK: Inspect leaves for diamond-shaped lesions (blast) or dead hearts (stem borer). ORGANIC TREATMENT: For blast: Spray Panchgavya 5% + neem oil 2ml/L. For stem borer: Apply neem cake 200 kg/ha in standing water. Install bird perches (10/acre). Repeat spray every 7 days. If NDVI doesn't improve in 14 days, consider early harvest of affected patches."
+  },
+  {
+    "input": "NDVI: 0.72 stable for 3 weeks, Crop: jute, Stage: fiber development, Rainfall: regular 80mm/week",
+    "output": "HEALTHY CROP: NDVI 0.72 indicates excellent photosynthetic activity. Stable reading for 3 weeks confirms healthy fiber development. Regular rainfall providing adequate moisture. RECOMMENDATION: Continue monitoring. Expected harvest in 30-40 days when plants start flowering. Prepare retting pond. Market price forecast for organic jute fiber: ₹45-50/kg at Silchar mandi. Expected yield: 2.0-2.2 ton/ha for JRO-524 variety."
+  },
+  {
+    "input": "Today: Shukla Paksha day 3, Soil moisture: 65%, Temperature: 30°C, Planned crop: Rabi mustard",
+    "output": "AUSPICIOUS SOWING WINDOW: Shukla Paksha (waxing moon) day 3 is excellent for sowing. Moon's increasing gravitational pull draws soil moisture upward, aiding germination. Soil moisture 65% is within ideal 60-80% range for mustard. Temperature 30°C acceptable for germination. ACTION: Sow mustard seeds TODAY (TS-46 or Varuna variety). Seed rate: 5 kg/ha. Spacing: 30cm x 10cm. Apply mustard cake 400 kg/ha as basal dose. Irrigate lightly after sowing. Next 7 days are Shukla Paksha — ideal establishment period."
+  },
+  {
+    "input": "Today: Krishna Paksha day 10, Crop: Rice ready for harvest, Grain moisture: 22%",
+    "output": "HARVEST TIMING CORRECT: Krishna Paksha (waning moon) day 10 is ideal for harvesting. Moon's decreasing pull draws plant energy to roots and grain, improving storage quality. Grain moisture 22% is near ideal 20% for harvest. ACTION: Harvest within 2-3 days. Cut at 15cm height. Thresh after 2 days sun-drying. Expected yield for Ranjit variety in Silchar: 2.5-3.0 ton/ha. Store in cool dry place. Next crop: consider rabi vegetables after 15 days soil rest."
+  },
+  {
+    "input": "Location: Silchar (24.81, 92.80), Rainfall: 400mm in 7 days, River level: Rising, Crop: Rice at seedling stage",
+    "output": "FLOOD WARNING — SILCHAR: 400mm rainfall in 7 days is extreme (normal: 200mm). Barak River rising. Rice at seedling stage is vulnerable to submergence > 3 days. IMMEDIATE ACTION: 1) Open field drainage channels to maximum. 2) If seedlings are < 15 days old and flood expected, prepare nursery for re-transplanting. 3) Apply Panchgavya 5% spray before flood to strengthen seedlings. 4) After water recedes: drain field, apply vermicompost 1 ton/ha to recover soil biology. 5) Gap-fill with extra seedlings from nursery. Insurance: Document with photos for PM Fasal Bima Yojana claim."
+  },
+  {
+    "input": "Pest observed: Aphids on mustard, Population: 15-20 per plant, Crop stage: Pod formation, Weather: Dry 7 days",
+    "output": "APHID THRESHOLD REACHED: 15-20 aphids per plant exceeds economic threshold (10/plant) for mustard at pod formation. Dry weather favors aphid multiplication. ORGANIC CONTROL: 1) Spray neem oil 5ml/L + soap solution immediately. 2) After 3 days, spray Panchgavya 3% + garlic-chili extract. 3) Introduce ladybird beetles if available (100 beetles/acre). 4) Apply wood ash dust on leaves (deters aphids). Repeat neem spray every 7 days until population < 5/plant. No yield loss expected if controlled within 5 days."
+  }
+]
