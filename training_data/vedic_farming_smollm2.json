@@ -1,0 +1,446 @@
+[
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Anurupyena Sutra in farming?"
+      },
+      {
+        "role": "assistant",
+        "content": "Anurupyena (Proportionality) scales soil nutrients against ideal reference. If N is 35 and ideal is 40, correction factor is 1.06 — meaning apply 6% more organic nitrogen. Applied to NPK: maintain N×1.06, P×1.00, K×0.93 ratio."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Nikhilam Sutra?"
+      },
+      {
+        "role": "assistant",
+        "content": "Nikhilam (All from 9, last from 10) computes soil deficit. Formula: deficit = (40-N + 40-P + 40-K)/3. If N=35, P=28, K=40, deficit is 5.67 ppm below ideal. Organic amendments needed: vermicompost for N, bone meal for P."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Paravartya Sutra?"
+      },
+      {
+        "role": "assistant",
+        "content": "Paravartya (Transpose and Adjust) inverts pH deviation. If pH is 5.5 (acidic), liming = (6.5-5.5) × 250 = 250 kg/ha lime needed. If pH is 8.0 (alkaline), apply gypsum. Target pH: 6.0-7.0 for most crops."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Gunakasamuccaya Sutra?"
+      },
+      {
+        "role": "assistant",
+        "content": "Gunakasamuccaya (Combined Factor) computes holistic soil wellness score from 4 factors: pH score, NPK score, moisture score, organic matter score. Geometric mean of all 4 gives wellness 0-100. Below 60 means soil needs Panchgavya treatment."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Ekadhikena Sutra?"
+      },
+      {
+        "role": "assistant",
+        "content": "Ekadhikena (One More Than Previous) predicts next growth stage milestone using Vedic sequence: 1.0, 1.618, 2.618, 4.236, 6.854... For a crop at stage 3 with index 4.236, next milestone is 6.854 — ready for flowering."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Urdhva-Tiryak Sutra?"
+      },
+      {
+        "role": "assistant",
+        "content": "Urdhva-Tiryak (Crosswise Multiplication) computes crop yield score: cross-multiply soil health × water index, then solar × temperature. Vertical sum: soil × solar + water × temperature. Final yield index = (cross1 + cross2 + vertical) / 300.0."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Vilokanam Sutra?"
+      },
+      {
+        "role": "assistant",
+        "content": "Vilokanam (By Mere Observation) detects sensor anomalies using standard deviation. If any reading deviates beyond threshold_sigma × stddev, anomaly is flagged. Used to detect faulty NPK sensors or sudden soil changes."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Shunyam Sutra?"
+      },
+      {
+        "role": "assistant",
+        "content": "Shunyam (Zero Principle) measures stress balance. Residual = stress_index - amendment_potency. If residual < 1.0, Shunyam is achieved — soil is in perfect equilibrium. Panchgavya application typically reduces stress by 10-15 points."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Ahimsa-108 Protocol?"
+      },
+      {
+        "role": "assistant",
+        "content": "Ahimsa-108 is Krishi-Veda's core ethical protocol. It BLOCKS all chemical fertilizer recommendations. When soil stress code exceeds 75, it mandates Panchgavya application. Chemicals blocked: urea, DAP, MOP, superphosphate, all pesticides, herbicides. Only organic inputs allowed."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Why avoid chemical fertilizers?"
+      },
+      {
+        "role": "assistant",
+        "content": "Chemical fertilizers kill soil microbes (100x reduction), pollute groundwater with nitrate, cause soil acidification, and leave toxic residues in food. Ahimsa-108 protocol enforces organic-only farming through Panchgavya, vermicompost, green manure, neem cake, and bone meal."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is Panchgavya and how to make it?"
+      },
+      {
+        "role": "assistant",
+        "content": "Panchgavya recipe: 5kg cow dung + 3L cow urine + 2L milk + 2L curd + 500g ghee. Mix in earthen pot, stir clockwise daily, ferment 7 days. Application: 3% solution (3L Panchgavya in 100L water), spray 300L per acre every 15 days. Benefits: 100x soil microbes, natural pest resistance, zero chemical residue."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to detect Ahimsa-108 stress?"
+      },
+      {
+        "role": "assistant",
+        "content": "Ahimsa-108 stress code = (Nikhilam deficit/40 × 60) + (|Paravartya deviation| × 2) + (Vilokanam anomaly flag × 20) + ((100-wellness) × 0.3). If ≥ 75, Ahimsa is triggered — prescribe Panchgavya immediately. If < 75, continue organic maintenance."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Best rice varieties for Silchar?"
+      },
+      {
+        "role": "assistant",
+        "content": "For Silchar, Assam (Lat 24.81, Lon 92.80): Ranjit rice — flood tolerant, 2.5 ton/ha, pH 5.5-6.5. Bahadur — drought resistant. Pankaj — high yield 3.0 ton/ha. Shahbhagi — 60-day maturity. All need alluvial loamy soil. Organic: vermicompost 2 ton/ha + azolla in flooded fields."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to grow jute in Silchar?"
+      },
+      {
+        "role": "assistant",
+        "content": "Silchar jute: JRO-524 (2.0 ton/ha) and JRO-8432 (2.2 ton/ha) varieties. Sow March-April. Soil pH 6.0-7.0, alluvial loam. Organic: neem cake 500 kg/ha at sowing, compost 5 ton/ha. Harvest July-August when plants flower. Retting in slow-flowing water for 10-15 days."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to grow mustard in Assam?"
+      },
+      {
+        "role": "assistant",
+        "content": "Assam mustard: TS-46 (1.0 ton/ha), Varuna (1.2 ton/ha), Pusa Bold (1.5 ton/ha). Rabi crop — sow October-November. Soil pH 6.0-7.5. Organic: mustard cake 400 kg/ha, wood ash 200 kg/ha. Harvest February-March when pods turn yellow. Market rate: ₹55/kg in Silchar."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What vegetables grow well in Silchar?"
+      },
+      {
+        "role": "assistant",
+        "content": "Silchar vegetables: brinjal (year-round), tomato (October-February), okra (March-June), bottle gourd (June-September), spinach (October-March), cauliflower (October-January). All need pH 6.0-7.0, compost 10 ton/ha. Mulching with rice straw conserves moisture."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to grow tea in Assam?"
+      },
+      {
+        "role": "assistant",
+        "content": "Assam tea: TV1, TV23, S3A3 varieties. Perennial crop. Soil pH 4.5-5.5 (acidic). Plant May-June. Organic: compost 20 ton/ha, cow dung 10 ton/ha. Harvest March-November. Yield 1.5 ton/ha. Market rate: ₹200/kg for organic Assam tea."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the best crop calendar for Silchar?"
+      },
+      {
+        "role": "assistant",
+        "content": "Silchar crop calendar: Kharif (June-Oct): Rice, Jute. Rabi (Nov-Feb): Mustard, Wheat, Vegetables. Summer (Mar-May): Okra, Cucumber. Perennial: Tea, Bamboo. Follow moon phases: sow during Shukla Paksha (waxing), harvest during Krishna Paksha (waning)."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "When to plant according to moon?"
+      },
+      {
+        "role": "assistant",
+        "content": "Shukla Paksha (waxing moon, 15 days after new moon): Best for sowing seeds, transplanting, foliar sprays. Moon's increasing light pulls sap upward. Krishna Paksha (waning moon, 15 days after full moon): Best for harvesting, ploughing, weeding, composting. Moon's decreasing light draws energy to roots."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Which nakshatra is best for farming?"
+      },
+      {
+        "role": "assistant",
+        "content": "Rohini nakshatra: best for all planting (fertile nakshatra). Uttara Phalguni: good for root crops. Hasta: good for manual work, weeding. Chitra: good for flowers. Anuradha: good for all agriculture. Avoid Ashlesha and Moola for planting."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the Vedic farming calendar?"
+      },
+      {
+        "role": "assistant",
+        "content": "Vedic calendar aligns farming with cosmic rhythms: Chaitra (Mar-Apr): land preparation. Vaisakha (Apr-May): summer crops. Jyaistha (May-Jun): pre-monsoon. Asadha (Jun-Jul): rice sowing. Sravana (Jul-Aug): weeding. Bhadra (Aug-Sep): pest watch. Asvina (Sep-Oct): early harvest. Kartika (Oct-Nov): rabi sowing."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to control rice pests organically?"
+      },
+      {
+        "role": "assistant",
+        "content": "For rice stem borer: neem oil 5ml/L water spray. For leaf folder: Panchgavya 3% spray every 15 days. For brown plant hopper: install bird perches (10/acre). For weeds: azolla cover in flooded fields suppresses weeds naturally. Avoid all chemical pesticides per Ahimsa-108."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to make neem pesticide?"
+      },
+      {
+        "role": "assistant",
+        "content": "Neem pesticide: Crush 5kg neem leaves, soak in 10L water 24 hours, filter, add 100ml soap solution. Spray undiluted. Effective against aphids, caterpillars, whitefly. Store maximum 48 hours. Apply early morning or evening."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to control jute pests?"
+      },
+      {
+        "role": "assistant",
+        "content": "Jute semilooper: spray Panchgavya 5% solution. Jute stem weevil: neem cake soil application 200 kg/ha at sowing. Jute mite: garlic-chili extract (100g garlic + 100g chili in 1L water, dilute 10x). All organic, Ahimsa-108 compliant."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Natural fungicide for plants?"
+      },
+      {
+        "role": "assistant",
+        "content": "Sour buttermilk (1L buttermilk + 10L water) spray controls powdery mildew. Cow urine (1:10 dilution) controls fungal diseases. Baking soda (5g/L water) for leaf spot. Copper oxychloride-free: use Trichoderma viride soil application instead."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to increase soil organic matter?"
+      },
+      {
+        "role": "assistant",
+        "content": "Apply Panchgavya 300L/acre every 15 days. Add vermicompost 2 ton/ha before sowing. Green manure: grow Sesbania (dhaincha) and plough in at flowering. Mulch with crop residue. Avoid burning stubble. Target: OM > 2% within 2 years."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to test soil health without lab?"
+      },
+      {
+        "role": "assistant",
+        "content": "Vilokanam method: Observe earthworm count (>10 per cubic foot = healthy). Smell test: sweet earthy smell = good microbes. Water infiltration: pour water, if absorbed within 2 minutes = good structure. pH: use litmus paper. Color: dark brown = high organic matter. Gunakasamuccaya score integrates all."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the ideal NPK ratio for rice?"
+      },
+      {
+        "role": "assistant",
+        "content": "For rice, Anurupyena ideal ratio: N=40 ppm, P=30 ppm, K=40 ppm. If N=35 (deficit 5), apply vermicompost. If P=28 (deficit 2), apply bone meal. If K=40 (balanced), no amendment. Never exceed ideal — excess causes lodging and pest susceptibility."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to conserve water in rice fields?"
+      },
+      {
+        "role": "assistant",
+        "content": "System of Rice Intensification (SRI): alternate wetting and drying, not continuous flooding. Saves 30% water. Apply mulch to reduce evaporation. Azolla cover reduces water loss. Check canal bunds for leaks weekly. Rainwater harvesting pond near field."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "When to irrigate crops in Assam?"
+      },
+      {
+        "role": "assistant",
+        "content": "Assam rainfall 2000-3000mm/year. Kharif: no irrigation needed normally. If dry spell >7 days, irrigate rice. Rabi: irrigate mustard at sowing, flowering, pod formation (3 irrigations). Vegetables: every 3-5 days. Check moisture by feel: if soil crumbles, it's dry. Water early morning."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the market price of organic rice in Silchar?"
+      },
+      {
+        "role": "assistant",
+        "content": "Organic rice in Silchar market: Ranjit ₹35-40/kg (conventional ₹22/kg). Joha aromatic rice: ₹80-100/kg. Bora sticky rice: ₹50-60/kg. Organic premium: 60-80% over conventional. Sell at Silchar Krishak Bazar on Tuesday/Friday for best rates."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "How to get organic certification for farm?"
+      },
+      {
+        "role": "assistant",
+        "content": "Participatory Guarantee System (PGS) for small farmers: join local organic farmers group, maintain farm diary for 2 years, no chemicals used, annual inspection by peer farmers. PGS-Organic certification is free. Apply through Assam Agriculture Department, Silchar office."
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the cost of Panchgavya for 1 acre?"
+      },
+      {
+        "role": "assistant",
+        "content": "Panchgavya cost for 1 acre: 5kg cow dung (₹10), 3L cow urine (₹5), 2L milk (₹80), 2L curd (₹60), 500g ghee (₹250). Total: ₹405 per batch. 300L solution needed per acre = 3L Panchgavya = ₹12 per acre. Compare: chemical fertilizer costs ₹1500-2000/acre. Saves ₹1500/acre!"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "ধান খেতিত বানপানীৰ ক্ষতি কেনেকৈ কমাম?"
+      },
+      {
+        "role": "assistant",
+        "content": "বানপানী সহ্যকাৰী জাত যেনে ৰঞ্জিত, বাহাদুৰ ব্যৱহাৰ কৰক। খেতিৰ চাৰিওফালে নলা খান্দি পানী ওলাই যোৱাৰ ব্যৱস্থা কৰক। বানপানীৰ পিছত পঞ্চগব্য স্প্ৰে' কৰি গছৰ শক্তি ঘূৰাই আনক। জৈৱিক সাৰ পুনৰ প্ৰয়োগ কৰক।"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "চাহ খেতিত পোকা কেনেকৈ নিয়ন্ত্ৰণ কৰিম?"
+      },
+      {
+        "role": "assistant",
+        "content": "চাহৰ Helopeltis পোকাৰ বাবে নিমপাতৰ ৰস 5% স্প্ৰে' কৰক। Red spider mite ৰ বাবে পঞ্চগব্য 3% দ্ৰৱ ব্যৱহাৰ কৰক। প্ৰতি 15 দিনৰ মূৰে মূৰে স্প্ৰে' কৰিলে পোকা নিয়ন্ত্ৰণত থাকে। ৰাসায়নিক কীটনাশক ব্যৱহাৰ কৰিব নালাগে।"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "মৰাপাট কেতিয়া চপাম আৰু কেনেকৈ প্ৰস্তুত কৰিম?"
+      },
+      {
+        "role": "assistant",
+        "content": "মৰাপাট গছত ফুল ধৰিলে চপোৱাৰ সময়। জুলাই-আগষ্ট মাহত চপাব। প্ৰস্তুতি: গছ কাটি আনি খৰিৰ বাবে বান্ধি ধীৰ গতিৰ পানীত 10-15 দিন ডুবাই ৰাখক। তাৰ পিছত বাকলি গুচাই ৰ'দত শুকাওক।"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "পঞ্চগব্য কিয় ব্যৱহাৰ কৰিব লাগে?"
+      },
+      {
+        "role": "assistant",
+        "content": "পঞ্চগব্যৰ ৭ টা উপকাৰিতা: ১) মাটিৰ জীৱাণু 100 গুণ বঢ়ায় ২) প্ৰাকৃতিক পোকা প্ৰতিৰোধ ৩) মাটিৰ গঠন উন্নত ৪) পানী ধৰি ৰাখে ৫) ৰাসায়নিক অৱশেষ নাই ৬) খৰছ কম (₹12/একৰ) ৭) অহিংসা-১০৮ প্ৰটকল মানি চলে।"
+      }
+    ]
+  }
+]
