@@ -55,21 +55,8 @@ _load_failed_reason: str = ""
 
 def _check_prerequisites() -> tuple[bool, str]:
     """Return (ok, reason) for whether SLM can be loaded."""
-    try:
-        import torch  # noqa: F401
-    except ImportError:
-        return False, "torch not installed"
-    try:
-        import transformers  # noqa: F401
-    except ImportError:
-        return False, "transformers not installed"
-    try:
-        import psutil
-        ram_gb = psutil.virtual_memory().available / 1e9
-        if ram_gb < 0.6:
-            return False, f"Insufficient RAM: {ram_gb:.1f} GB available"
-    except ImportError:
-        pass  # psutil optional
+    # No torch/transformers needed — we use llama.cpp subprocess
+    return True, "llama.cpp mode"
 def _load_model() -> bool:
     """Locate llama-completion binary and GGUF model. No torch needed."""
     global _model, _tokenizer, _model_name, _load_failed_reason
@@ -185,8 +172,11 @@ def _slm_infer(prompt: str) -> str:
     if _model is None or _tokenizer is None:
         return ""
     try:
-        cmd = f'echo "{prompt}" | {_model} -m {_tokenizer} -n {MAX_NEW_TOKENS} --temp 0.7 2>/dev/null'
-        proc = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=60)
+        # Truncate prompt to 600 chars and use list args (no shell injection)
+        short_prompt = prompt[:600].replace('\n', ' ').replace('"', "'")
+        proc = subprocess.run(
+            [_model, "-m", _tokenizer, "-p", short_prompt, "-n", str(MAX_NEW_TOKENS), "--temp", "0.7", "--log-disable"],
+            capture_output=True, text=True, timeout=60)
         output = proc.stdout.strip()
         # llama-completion outputs: "user\n<prompt>\nassistant\n<response>"
         if "assistant" in output:
