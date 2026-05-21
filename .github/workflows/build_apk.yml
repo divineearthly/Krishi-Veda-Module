@@ -6,13 +6,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
     
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -24,33 +22,39 @@ jobs:
           sudo apt-get install -y -qq python3-pip python3-dev build-essential \
             git autoconf automake libtool pkg-config zlib1g-dev \
             libncurses5-dev libncursesw5-dev libtinfo5 cmake \
-            libffi-dev libssl-dev zip unzip lld
+            libffi-dev libssl-dev zip unzip lld wget
       
       - name: Install buildozer
         run: pip install buildozer cython virtualenv
       
-      - name: Pre-accept all Android SDK licenses
+      - name: Manually install Android SDK with licenses
         run: |
-          mkdir -p $HOME/.android
-          echo -e "\n84831d9409646a918e30573bab4c9c91346d8abd" > $HOME/.android/sdk_license.sha1 || true
-          # Create a script that Buildozer will use
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools
-          # Set env vars that force license acceptance
-          echo "export ANDROID_SDK_HOME=$HOME/.buildozer/android/platform/android-sdk" >> $HOME/.bashrc
-          echo "y" > /tmp/yes.txt
+          # Download commandline tools
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q commandlinetools-linux-11076708_latest.zip
+          mv cmdline-tools latest
+          rm commandlinetools-linux-11076708_latest.zip
+          
+          # Set up environment
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+          
+          # Accept licenses
+          yes | sdkmanager --licenses
+          
+          # Install required packages
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;34.0.0"
       
       - name: Build APK
         run: |
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export ANDROID_NDK_ROOT=$HOME/android-sdk/ndk/25.2.9519653
           cd $GITHUB_WORKSPACE
-          # Trick: pre-create the license file that sdkmanager checks
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
-          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo -e "\n84831d9409646a918e30573bab4c9c91346d8abd" >> $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" >> $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          # Now run buildozer
-          yes "" | buildozer android debug 2>&1 || true
-          # Check if APK was created
-          find . -name "*.apk" -type f
+          
+          # Run Buildozer with pre-installed SDK
+          buildozer android debug
         timeout-minutes: 50
       
       - name: Upload APK
@@ -58,3 +62,14 @@ jobs:
         with:
           name: DivineEarthly-APK
           path: bin/*.apk
+      
+      - name: Create Release
+        if: success()
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: "Divine-Earthly v${{ github.run_number }}"
+          body: "📱 Download and install. Features: Krishi-Veda + Water Guardian + 8 Sutras + Offline"
+          files: bin/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
