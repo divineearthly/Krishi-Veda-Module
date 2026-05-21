@@ -16,45 +16,35 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      - name: Install system deps
+      - name: Install deps
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq python3-pip python3-dev build-essential \
-            git autoconf automake libtool pkg-config zlib1g-dev \
-            libncurses5-dev libncursesw5-dev libtinfo5 cmake \
-            libffi-dev libssl-dev zip unzip lld wget
+          sudo apt-get update -qq && sudo apt-get install -y -qq python3-pip python3-dev build-essential git autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev zip unzip
+          pip install buildozer cython virtualenv
       
-      - name: Install buildozer
-        run: pip install buildozer cython virtualenv
-      
-      - name: Manually install Android SDK with licenses
+      - name: Run Buildozer init (downloads SDK)
         run: |
-          # Download commandline tools
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk/cmdline-tools
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip -q commandlinetools-linux-11076708_latest.zip
-          mv cmdline-tools latest
-          rm commandlinetools-linux-11076708_latest.zip
-          
-          # Set up environment
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-          
-          # Accept licenses
-          yes | sdkmanager --licenses
-          
-          # Install required packages
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;34.0.0"
+          cd $GITHUB_WORKSPACE
+          buildozer init 2>/dev/null || true
+          # Let Buildozer start downloading SDK, then kill it after 60s
+          timeout 60 buildozer android debug 2>&1 || true
+        timeout-minutes: 3
+      
+      - name: Accept license in Buildozer SDK
+        run: |
+          SDK_DIR=$HOME/.buildozer/android/platform/android-sdk
+          if [ -f "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" ]; then
+            yes | $SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses
+            $SDK_DIR/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platforms;android-33"
+          fi
+          # Also try the tools/bin path
+          if [ -f "$SDK_DIR/tools/bin/sdkmanager" ]; then
+            yes | $SDK_DIR/tools/bin/sdkmanager --licenses
+          fi
       
       - name: Build APK
         run: |
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          export ANDROID_NDK_ROOT=$HOME/android-sdk/ndk/25.2.9519653
           cd $GITHUB_WORKSPACE
-          
-          # Run Buildozer with pre-installed SDK
-          buildozer android debug
+          yes | buildozer android debug
         timeout-minutes: 50
       
       - name: Upload APK
@@ -69,7 +59,7 @@ jobs:
         with:
           tag_name: v${{ github.run_number }}
           name: "Divine-Earthly v${{ github.run_number }}"
-          body: "📱 Download and install. Features: Krishi-Veda + Water Guardian + 8 Sutras + Offline"
+          body: "📱 Krishi-Veda + Water Guardian APK"
           files: bin/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
