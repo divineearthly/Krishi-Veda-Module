@@ -1,0 +1,48 @@
+name: Create Update Release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '*.md'
+      - '.gitignore'
+
+jobs:
+  build-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Create update package
+        run: |
+          mkdir -p update_package
+          # Copy all app files except git and build artifacts
+          rsync -av --exclude='.git' --exclude='.github' --exclude='__pycache__' \
+            --exclude='*.pyc' --exclude='venv' --exclude='.venv' \
+            ./ update_package/
+          
+          # Create version file
+          echo "${{ github.sha }}" > update_package/version.txt
+          echo "${{ github.ref_name }}" >> update_package/version.txt
+          
+          # Create ZIP
+          cd update_package
+          zip -r ../divine-earthly-update.zip .
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: "Update v${{ github.run_number }}"
+          body: |
+            ## Divine-Earthly Update v${{ github.run_number }}
+            
+            **Changes in this update:**
+            ${{ github.event.head_commit.message }}
+            
+            The APK will auto-detect and install this update.
+          files: divine-earthly-update.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
