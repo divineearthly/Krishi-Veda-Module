@@ -1,12 +1,22 @@
-import gradio as gr
-from vedic_core.krishi_sutras import KrishiSutraEngine
-engine = KrishiSutraEngine()
-def analyze_soil(N, P, K, ph, moisture):
-    result = engine.analyze({"N":N,"P":P,"K":K,"pH":ph,"moisture":moisture})
-    return result.get("recommendation","Analysis pending")
-demo = gr.Interface(fn=analyze_soil, inputs=[
-    gr.Slider(0,100,label="N"),gr.Slider(0,100,label="P"),
-    gr.Slider(0,100,label="K"),gr.Slider(0,14,label="pH"),
-    gr.Slider(0,100,label="Moisture %")],
-    outputs="text",title="🌾 Krishi-Veda",description="Vedic agricultural intelligence")
-demo.launch()
+"""
+Krishi-Veda Global Engine — Hugging Face Space entry point.
+"""
+import streamlit as st
+
+st.set_page_config(page_title="Krishi-Veda", layout="centered")
+st.title("🌾 Krishi-Veda Global Engine")
+st.caption("Vedic Agricultural Intelligence — Serving All Living Beings")
+
+st.markdown("""
+### 🕉️ Krishi-Veda API
+
+FastAPI backend with 8 Vedic Sutras, Ahimsa-108 Protocol, 135M SLM, NASA POWER weather.
+
+| Endpoint | Description |
+|----------|-------------|
+| `/health` | System health |
+| `/api/v1/plan` | Full Vedic farm plan |
+| `/api/v1/slm/advice` | AI farming advice |
+
+[GitHub](https://github.com/divineearthly/Krishi-Veda-Module)
+""")
