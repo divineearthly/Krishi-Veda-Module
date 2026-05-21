@@ -1,0 +1,36 @@
+[
+  {
+    "plan_id": "test-sheriff-001",
+    "timestamp": "2026-05-21T21:12:41.507700",
+    "stage": "validated",
+    "recommendation": "Apply 60:30:40 NPK, plant Ranjit rice, irrigate every 5 days",
+    "source_guideline": "AAU Jorhat Kharif Guidelines 2025",
+    "confidence_score": 85.0,
+    "farmer_context": {
+      "location": "Silchar",
+      "soil_type": "Alluvial",
+      "crop": "Rice",
+      "season": "Kharif",
+      "weather": {},
+      "soil_health": {},
+      "water_status": "Unknown",
+      "pest_pressure": "None"
+    },
+    "status": "pending_action",
+    "action_taken": "Followed all AI + SAU recommendations",
+    "action_notes": "Used organic Panchgavya",
+    "action_timestamp": "2026-05-21T21:12:41.512376",
+    "outcome": {
+      "actual_yield_t_ha": 4.8,
+      "predicted_yield_t_ha": 4.5,
+      "yield_accuracy_percent": 106.7,
+      "water_saved_percent": 0,
+      "cost_reduction_percent": 0,
+      "disease_controlled": false,
+      "farmer_satisfaction_1_5": 5,
+      "notes": "Best yield in 3 seasons"
+    },
+    "outcome_timestamp": "2026-05-21T21:12:41.513575",
+    "operationally_correct": true
+  }
+]

@@ -18,6 +18,7 @@ from backend.services.crop_disease import identify_disease, get_all_diseases_for
 from backend.services.mandi_prices import get_crop_prices, get_best_selling_crop
 from backend.services.voice_interface import parse_voice_command
 from backend.services.validation_engine import validate_plan, get_sau_guidelines, record_farmer_feedback, get_validation_stats
+from backend.services.validation_ledger import create_recommendation_record, record_farmer_action, record_field_outcome, get_evidence_loop, get_ledger_stats, get_all_entries
 
 app = FastAPI(title="Krishi-Veda Global Engine", version="2.1")
 
@@ -368,6 +369,50 @@ async def best_crop(state: str = "Assam", season: str = "kharif"):
     """Get most profitable crop recommendation based on mandi prices."""
     return get_best_selling_crop(state, season)
 
+
+
+
+# ── Validation Ledger (Sheriff's Evidence Loop) ─────────────────────────────
+
+@app.post("/api/v1/ledger/recommendation")
+async def ledger_recommendation(plan_id: str, recommendation: str, source: str, confidence: float, context: dict = {}):
+    """Layer 1: Record AI recommendation with authority source."""
+    return create_recommendation_record(plan_id, recommendation, source, confidence, context)
+
+
+@app.post("/api/v1/ledger/action")
+async def ledger_action(plan_id: str, action: str, notes: str = ""):
+    """Layer 2: Record what farmer actually did."""
+    return record_farmer_action(plan_id, action, notes)
+
+
+@app.post("/api/v1/ledger/outcome")
+async def ledger_outcome(plan_id: str, actual_yield: float, predicted_yield: float,
+                          water_saved: float = 0, cost_reduction: float = 0,
+                          disease_controlled: bool = False, satisfaction: int = 3,
+                          notes: str = ""):
+    """Layer 3: Record field outcome and validate recommendation."""
+    return record_field_outcome(plan_id, actual_yield, predicted_yield,
+                                 water_saved, cost_reduction, disease_controlled,
+                                 satisfaction, notes)
+
+
+@app.get("/api/v1/ledger/evidence/{plan_id}")
+async def ledger_evidence(plan_id: str):
+    """Get complete evidence loop for a recommendation."""
+    return get_evidence_loop(plan_id)
+
+
+@app.get("/api/v1/ledger/stats")
+async def ledger_statistics():
+    """Get aggregate validation statistics from the ledger."""
+    return get_ledger_stats()
+
+
+@app.get("/api/v1/ledger/entries")
+async def ledger_entries(limit: int = 50):
+    """Get all ledger entries."""
+    return get_all_entries(limit)
 
 
 # ── Validation & Ground Truth ───────────────────────────────────────────────
