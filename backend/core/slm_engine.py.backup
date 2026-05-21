@@ -22,8 +22,6 @@ import threading
 import time
 from typing import Optional
 import subprocess
-import tempfile
-import os
 
 # ── Vedic Link imports (always available) ────────────────────────────────────
 from backend.core.vedic_enhanced_engine import compute_vedic_grounding, generate_vedic_prompt
@@ -177,19 +175,11 @@ def _slm_infer(prompt: str) -> str:
     try:
         # Use the structured Vedic report as prompt (shorter, more effective)
         short_prompt = prompt[:400]
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as out_f:
-            out_path = out_f.name
-        proc = subprocess.Popen(
-            [_model, "-m", _tokenizer, "-p", short_prompt, "-n", "50", "--temp", "0.7"],
-            stdout=open(out_path, 'w'),
-            stderr=subprocess.PIPE,
-            stdin=subprocess.DEVNULL,
-            text=True
+        proc = subprocess.run(
+            [_model, "-m", _tokenizer, "-p", short_prompt, "-n", "60", "--temp", "0.7", "--log-disable"],
+            capture_output=True, text=True, timeout=25
         )
-        proc.wait(timeout=60)
-        with open(out_path, 'r') as f:
-            output = f.read().strip()
-        os.unlink(out_path)
+        output = proc.stdout.strip()
         if "assistant" in output:
             output = output.split("assistant", 1)[-1].strip()
         return output[:400]
@@ -224,13 +214,17 @@ def generate_advice(
         ndvi_val = ndvi.get("ndvi", 0.5)
         crop_h = ndvi.get("crop_health", "Unknown")
 
-        # Shorter, more directive prompt for small model
-        ahimsa_note = " MANDATORY: Only organic Panchgavya protocol." if vedic['ahimsa_triggered'] else ""
         prompt = (
-            f"Soil: {soil_type}, NPK deficit: {vedic['deficit_ppm']:.0f}ppm, "
-            f"Wellness: {vedic['wellness']:.0f}/100. "
-            f"Weather: {temp}C, {rain}mm rain. Moon: {paksha}.{ahimsa_note}\n"
-            f"Best crop, fertilizer, and timing for this farmer:"
+            f"{grounding_text}\n\n"
+            f"FIELD CONDITIONS:\n"
+            f"Soil Type: {soil_type}\n"
+            f"Moon Phase: {paksha}\n"
+            f"Temperature: {temp}°C, Monthly Rainfall: {rain}mm\n"
+            f"Satellite NDVI: {ndvi_val} ({crop_h})\n\n"
+            f"TASK: You are a Vedic agricultural expert. Using ONLY the verified "
+            f"kernel data above, write a concise (5-7 line) farming plan for this "
+            f"farmer. Mention the best crop, fertilization, and timing. "
+            f"{'Prescribe Panchgavya protocol.' if vedic['ahimsa_triggered'] else ''}"
         )
 
         try:

@@ -12,6 +12,7 @@ from backend.core.uart_listener import uart_websocket_handler, simulate_sensor_s
 from backend.core.sync_manager import sync_data_for_location, get_cached
 from backend.core import slm_engine
 from backend.services.slm_reasoning_engine import reason, FarmContext
+from backend.services.nasa_power_weather import get_weather as fetch_nasa_weather
 
 app = FastAPI(title="Krishi-Veda Global Engine", version="2.1")
 
