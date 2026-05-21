@@ -1,14 +1,11 @@
 name: Build APK
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
       
@@ -25,30 +22,23 @@ jobs:
       
       - name: Install system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip python3-dev build-essential \
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-pip python3-dev build-essential \
             git autoconf automake libtool pkg-config zlib1g-dev \
             libncurses5-dev libncursesw5-dev libtinfo5 cmake \
             libffi-dev libssl-dev zip unzip lld
       
       - name: Install Python packages
-        run: |
-          pip install --upgrade pip
-          pip install buildozer cython virtualenv
+        run: pip install --upgrade buildozer cython virtualenv
       
-      - name: Accept Android SDK licenses
+      - name: Build APK (auto-accept licenses)
         run: |
+          export ANDROID_SDK_HOME=$HOME/.buildozer/android/platform/android-sdk
           mkdir -p $HOME/.android
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
-      
-      - name: Build APK
-        run: |
+          touch $HOME/.android/repositories.cfg
           cd $GITHUB_WORKSPACE
-          export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
-          export ANDROID_NDK_ROOT=$HOME/.buildozer/android/platform/android-ndk
-          buildozer android debug
-        timeout-minutes: 45
+          yes | buildozer android debug
+        timeout-minutes: 50
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -63,22 +53,11 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: "Divine-Earthly v${{ github.run_number }}"
           body: |
-            ## 📱 Divine-Earthly Android App
-            
-            ### Install:
-            1. Download the APK below
-            2. Enable "Install from Unknown Sources" in Settings
-            3. Open and install
+            ## 📱 Download & Install
             
             ### Features:
-            - 🌾 Krishi-Veda — Vedic AI for farmers
-            - 🛡️ Water Guardian — Satellite water monitoring
-            - 🕉️ 8 Vedic Sutras + Ahimsa-108
-            - 📵 Fully offline
-            - 🗣️ Voice (Hindi/Bengali/Assamese)
-            - 🦠 Disease detection (40+ crops)
-            - 💰 Mandi prices + MSP
-            - 🌦️ 7-day forecast
+            🌾 Krishi-Veda | 🛡️ Water Guardian | 🕉️ 8 Sutras | 📵 Offline
+            🗣️ Voice | 🦠 Disease ID | 💰 Mandi Prices | 🌦️ 7-Day Forecast
           files: bin/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
