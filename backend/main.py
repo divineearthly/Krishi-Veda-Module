@@ -17,6 +17,7 @@ from backend.services.weather_forecast import get_7day_forecast
 from backend.services.crop_disease import identify_disease, get_all_diseases_for_crop
 from backend.services.mandi_prices import get_crop_prices, get_best_selling_crop
 from backend.services.voice_interface import parse_voice_command
+from backend.services.validation_engine import validate_plan, get_sau_guidelines, record_farmer_feedback, get_validation_stats
 
 app = FastAPI(title="Krishi-Veda Global Engine", version="2.1")
 
@@ -366,6 +367,37 @@ async def mandi_prices(crop: str, state: str = "Assam"):
 async def best_crop(state: str = "Assam", season: str = "kharif"):
     """Get most profitable crop recommendation based on mandi prices."""
     return get_best_selling_crop(state, season)
+
+
+
+# ── Validation & Ground Truth ───────────────────────────────────────────────
+
+@app.post("/api/v1/validate/plan")
+async def validate_vedic_plan(plan_data: dict):
+    """Validate AI plan against SAU guidelines. Returns confidence score."""
+    district = plan_data.get('district', 'Unknown')
+    state = plan_data.get('state', 'Assam')
+    season = plan_data.get('season', 'kharif')
+    vedic_plan = plan_data.get('vedic_plan', {})
+    return validate_plan(vedic_plan, district, state, season)
+
+
+@app.get("/api/v1/validate/guidelines")
+async def sau_guidelines(state: str = "Assam", soil: str = "Alluvial", season: str = "kharif"):
+    """Get SAU agricultural university guidelines for validation."""
+    return get_sau_guidelines(state, soil, season)
+
+
+@app.post("/api/v1/validate/feedback")
+async def farmer_feedback(plan_id: str, actual_yield: float, satisfaction: int, notes: str = ""):
+    """Record farmer feedback on AI advice for continuous improvement."""
+    return record_farmer_feedback(plan_id, actual_yield, satisfaction, notes)
+
+
+@app.get("/api/v1/validate/stats")
+async def validation_statistics():
+    """Get aggregate validation statistics from farmer feedback."""
+    return get_validation_stats()
 
 
 # ── Voice Command ────────────────────────────────────────────────────────────
