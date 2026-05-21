@@ -13,6 +13,10 @@ from backend.core.sync_manager import sync_data_for_location, get_cached
 from backend.core import slm_engine
 from backend.services.slm_reasoning_engine import reason, FarmContext
 from backend.services.nasa_power_weather import get_weather as fetch_nasa_weather
+from backend.services.weather_forecast import get_7day_forecast
+from backend.services.crop_disease import identify_disease, get_all_diseases_for_crop
+from backend.services.mandi_prices import get_crop_prices, get_best_selling_crop
+from backend.services.voice_interface import parse_voice_command
 
 app = FastAPI(title="Krishi-Veda Global Engine", version="2.1")
 
@@ -324,6 +328,52 @@ async def slm_advice(req: PlanRequest):
 @app.get("/api/v1/slm/status")
 async def slm_status():
     return slm_engine.get_slm_status()
+
+
+
+# ── 7-Day Weather Forecast ─────────────────────────────────────────────────
+
+@app.get("/api/v1/weather/forecast")
+async def weather_forecast(lat: float, lon: float):
+    """7-day weather forecast with sowing advice."""
+    return get_7day_forecast(lat, lon)
+
+
+# ── Crop Disease Identification ─────────────────────────────────────────────
+
+@app.post("/api/v1/disease/identify")
+async def disease_identify(crop: str, symptoms: str):
+    """Identify crop disease from symptoms. Symptoms as comma-separated string."""
+    symptom_list = [s.strip() for s in symptoms.split(",")]
+    return identify_disease(crop, symptom_list)
+
+
+@app.get("/api/v1/disease/list/{crop}")
+async def disease_list(crop: str):
+    """List all known diseases for a crop."""
+    return get_all_diseases_for_crop(crop)
+
+
+# ── Mandi Prices ─────────────────────────────────────────────────────────────
+
+@app.get("/api/v1/mandi/prices")
+async def mandi_prices(crop: str, state: str = "Assam"):
+    """Get current mandi prices for a crop."""
+    return get_crop_prices(crop, state)
+
+
+@app.get("/api/v1/mandi/best-crop")
+async def best_crop(state: str = "Assam", season: str = "kharif"):
+    """Get most profitable crop recommendation based on mandi prices."""
+    return get_best_selling_crop(state, season)
+
+
+# ── Voice Command ────────────────────────────────────────────────────────────
+
+@app.post("/api/v1/voice/command")
+async def voice_command(text: str, language: str = "hi"):
+    """Parse spoken voice command into Krishi-Veda action."""
+    return parse_voice_command(text, language)
 
 
 # ── UART WebSocket ───────────────────────────────────────────────────────────
