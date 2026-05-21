@@ -1,0 +1,66 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Manual trigger from GitHub UI
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Buildozer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip python3-dev build-essential \
+            git autoconf automake libtool pkg-config zlib1g-dev \
+            libncurses5-dev libncursesw5-dev libtinfo5 cmake \
+            libffi-dev libssl-dev openjdk-17-jdk
+          pip install buildozer cython
+      
+      - name: Build APK
+        run: |
+          cd /home/runner/work/Krishi-Veda-Module/Krishi-Veda-Module
+          buildozer android debug
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DivineEarthly-APK
+          path: /home/runner/work/Krishi-Veda-Module/Krishi-Veda-Module/bin/*.apk
+      
+      - name: Create GitHub Release with APK
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: "Release v${{ github.run_number }}"
+          body: |
+            ## Divine-Earthly APK v${{ github.run_number }}
+            
+            **Install this APK on your Android device.**
+            
+            ### Features:
+            - 🌾 Krishi-Veda — Vedic agricultural AI
+            - 🛡️ Water Guardian — Satellite water monitoring
+            - 🕉️ 8 Vedic Sutras + Ahimsa-108 Protocol
+            - 📵 Fully offline-capable
+            - 🗣️ Voice commands (Hindi, Bengali, Assamese)
+            - 🦠 Crop disease detection (40+ diseases)
+            - 💰 Mandi prices with MSP
+            - 🌦️ 7-day weather forecast
+            
+            ### Install:
+            1. Download the APK below
+            2. Enable "Install from Unknown Sources" in Settings
+            3. Open and install
+            4. Grant location/camera/mic permissions for full features
+          files: /home/runner/work/Krishi-Veda-Module/Krishi-Veda-Module/bin/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
