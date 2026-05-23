@@ -63,6 +63,11 @@ class PlanRequest(BaseModel):
     ndvi: Optional[dict] = None         # optional pre-fetched NDVI
     target_language: Optional[str] = None  # language code for localization
 
+
+
+# ── Frontend ─────────────────────────────────────────────────────────────────
+
+@app.get("/")
 async def root():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
