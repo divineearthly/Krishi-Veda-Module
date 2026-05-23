@@ -1,3 +1,4 @@
+import os
 # Krishi-Veda Configuration
 # ARM64 Termux optimized
 
