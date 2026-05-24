@@ -227,7 +227,7 @@ def generate_advice(sensor_data, soil_type="General", paksha="waxing",
         )
 
         t0 = time.time()
-        raw = _infer(prompt)
+        raw = _infer(prompt_raw)
         elapsed = round(time.time() - t0, 2)
 
         if raw and len(raw) > 10:
