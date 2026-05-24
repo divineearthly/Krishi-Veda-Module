@@ -219,7 +219,7 @@ def generate_advice(sensor_data, soil_type="General", paksha="waxing",
         ahimsa = vedic["ahimsa_triggered"]
         ahimsa_line = "ONLY organic Panchgavya. NO chemicals." if ahimsa else "Prefer organic methods."
 
-        prompt = (
+        prompt_raw = (
             f"Assam farmer: Soil {soil_type}, health {vedic['wellness']:.0f}/100, "
             f"NPK deficit {vedic['deficit_ppm']:.0f}ppm, temp {temp}C, rain {rain}mm.\n"
             f"{ahimsa_line}\n"
