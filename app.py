@@ -6,7 +6,7 @@ AI advice: available on /ai-advice endpoint
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from datetime import datetime
 
 app = Flask(__name__)
@@ -228,6 +228,10 @@ def ai_advice():
     )
     
     return jsonify({**result, "timestamp": datetime.now().isoformat()})
+
+@app.route('/app')
+def serve_app():
+    return send_from_directory('frontend', 'offline_app.html')
 
 if __name__ == '__main__':
     print("=" * 50)

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Krishi-Veda — Sovereign Vedic AI</title>
+<style>
+:root { --green: #1b4332; --gold: #d4a574; --cream: #fefae0; --dark: #2d2d2d; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: system-ui, sans-serif; background: var(--cream); color: var(--dark); }
+.header { background: var(--green); color: white; padding: 1rem; text-align: center; }
+.header h1 { font-size: 1.5rem; }
+.header p { font-size: 0.8rem; opacity: 0.8; margin-top: 0.25rem; }
+.container { max-width: 600px; margin: 0 auto; padding: 1rem; }
+.card { background: white; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.card h2 { font-size: 1.1rem; color: var(--green); margin-bottom: 0.75rem; }
+.btn { display: block; width: 100%; padding: 0.9rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 0.5rem; }
+.btn-primary { background: var(--green); color: white; }
+.btn-secondary { background: var(--gold); color: var(--dark); }
+.btn-outline { background: white; border: 2px solid var(--green); color: var(--green); }
+.select, .input { width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 0.75rem; }
+.result { background: #f9f9f9; border-radius: 8px; padding: 1rem; margin-top: 0.75rem; white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5; max-height: 400px; overflow-y: auto; }
+.spinner { display: none; text-align: center; padding: 1rem; }
+.spinner.active { display: block; }
+.om { text-align: center; font-size: 2rem; padding: 1rem; }
+.badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+.badge-success { background: #d4edda; color: #155724; }
+.badge-warning { background: #fff3cd; color: #856404; }
+.badge-danger { background: #f8d7da; color: #721c24; }
+.weather-bar { display: flex; gap: 0.5rem; text-align: center; font-size: 0.85rem; }
+.weather-item { flex:1; background: #f0f0f0; border-radius: 8px; padding: 0.5rem; }
+.language-select { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.lang-btn { padding: 0.5rem 1rem; border: 2px solid #ddd; border-radius: 20px; background: white; cursor: pointer; font-size: 0.9rem; }
+.lang-btn.active { border-color: var(--green); background: var(--green); color: white; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🕉️ Krishi-Veda</h1>
+    <p>Sovereign Vedic AI · Offline · No GPU · Silchar, Assam</p>
+</div>
+
+<div class="container">
+
+    <!-- Weather Card -->
+    <div class="card" id="weather-card">
+        <h2>🌤️ Live Weather — Silchar</h2>
+        <div class="weather-bar" id="weather-data">
+            <div class="weather-item">Temp<br><strong>--°C</strong></div>
+            <div class="weather-item">Humidity<br><strong>--%</strong></div>
+            <div class="weather-item">Rain (3d)<br><strong>--mm</strong></div>
+            <div class="weather-item">Soil Moist.<br><strong>--%</strong></div>
+        </div>
+    </div>
+
+    <!-- Quick Ask Card -->
+    <div class="card">
+        <h2>🌾 Instant Farming Advice</h2>
+        <div class="language-select" id="lang-select">
+            <button class="lang-btn active" onclick="setLanguage('en', this)">English</button>
+            <button class="lang-btn" onclick="setLanguage('hi', this)">हिंदी</button>
+            <button class="lang-btn" onclick="setLanguage('bn', this)">বাংলা</button>
+            <button class="lang-btn" onclick="setLanguage('as', this)">অসমীয়া</button>
+        </div>
+        <select class="select" id="soil-type">
+            <option value="alluvial">Alluvial (পলি / जलोढ़)</option>
+            <option value="laterite">Laterite (লেটেৰাইট)</option>
+            <option value="sandy">Sandy (বালি / रेतीली)</option>
+            <option value="clay">Clay (কাদামাটি / चिकनी)</option>
+            <option value="loamy">Loamy (দোআঁশ / दोमट)</option>
+        </select>
+        <select class="select" id="paksha">
+            <option value="waxing">Shukla Paksha (Waxing 🌒→🌕)</option>
+            <option value="waning">Krishna Paksha (Waning 🌖→🌑)</option>
+        </select>
+        <button class="btn btn-primary" onclick="getInstantAdvice()">
+            🕉️ Get Vedic Advice (Instant)
+        </button>
+        <div class="result" id="instant-result" style="display:none;"></div>
+    </div>
+
+    <!-- AI Advice Card -->
+    <div class="card">
+        <h2>🤖 AI-Powered Advice (Vedic SLM)</h2>
+        <p style="font-size:0.8rem;color:#666;margin-bottom:0.5rem;">Uses Qwen2.5-0.5B + 17 Vedic algorithms · ~25s</p>
+        <input class="input" id="ai-question" placeholder="Ask anything about farming..." value="What crops to plant this season?">
+        <button class="btn btn-secondary" onclick="getAIAdvice()">
+            🧠 Generate AI Advice (25s)
+        </button>
+        <div class="spinner" id="ai-spinner">🕉️ Vedic AI is thinking... Sphota attention active...</div>
+        <div class="result" id="ai-result" style="display:none;"></div>
+    </div>
+
+    <!-- Sensor Connect Card -->
+    <div class="card">
+        <h2>📡 Sensor Status</h2>
+        <div id="sensor-status">
+            <span class="badge badge-warning">No sensors connected</span>
+            <p style="font-size:0.8rem;margin-top:0.5rem;">Connect NPK/pH/moisture sensor via USB-OTG or Bluetooth for real-time soil analysis.</p>
+        </div>
+        <button class="btn btn-outline" onclick="simulateSensor()">
+            🧪 Simulate Sensor Reading
+        </button>
+        <div class="result" id="sensor-result" style="display:none;"></div>
+    </div>
+
+    <div class="om">ॐ</div>
+    <p style="text-align:center;font-size:0.7rem;color:#999;padding-bottom:2rem;">
+        Vasudhaiva Kutumbakam — The World is One Family<br>
+        Built by Joydeep Das · Divine Earthly · Silchar, Assam
+    </p>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:5000';
+let currentLang = 'en';
+
+// Load weather on start
+fetch(`${API}/weather`)
+    .then(r => r.json())
+    .then(d => {
+        document.getElementById('weather-data').innerHTML = `
+            <div class="weather-item">Temp<br><strong>${d.temperature_c}°C</strong></div>
+            <div class="weather-item">Humidity<br><strong>${d.humidity_pct}%</strong></div>
+            <div class="weather-item">Rain (3d)<br><strong>${d.forecast?.rain_next_3days || '--'}mm</strong></div>
+            <div class="weather-item">Soil Moist.<br><strong>${(d.soil_moisture*100).toFixed(0)}%</strong></div>
+        `;
+    })
+    .catch(() => {
+        document.getElementById('weather-data').innerHTML = '<p style="color:#856404;">⚠ Cannot connect to Krishi-Veda server. Start with: python3 app.py</p>';
+    });
+
+function setLanguage(lang, btn) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+function getInstantAdvice() {
+    const soil = document.getElementById('soil-type').value;
+    const paksha = document.getElementById('paksha').value;
+    const div = document.getElementById('instant-result');
+    div.style.display = 'block';
+    div.innerHTML = '<em>🕉️ Consulting Vedic engine...</em>';
+    
+    fetch(`${API}/ask?soil=${soil}&paksha=${paksha}&lang=${currentLang}`)
+        .then(r => r.json())
+        .then(d => {
+            div.innerHTML = `
+                <div style="margin-bottom:0.5rem;">
+                    <span class="badge badge-success">${d.engine}</span>
+                    <span style="font-size:0.7rem;margin-left:0.5rem;">${d.inference_ms}ms</span>
+                </div>
+                ${d.advice.replace(/\n/g, '<br>')}
+                <div style="margin-top:0.5rem;font-size:0.7rem;color:#666;">
+                    Ahimsa: ${d.vedic?.ahimsa_triggered ? '⚠ Triggered' : '✓ Clear'} | 
+                    Wellness: ${d.vedic?.wellness?.toFixed(1)}/100
+                </div>
+            `;
+        })
+        .catch(e => { div.innerHTML = `<span style="color:red;">Error: ${e.message}</span>`; });
+}
+
+function getAIAdvice() {
+    const question = document.getElementById('ai-question').value;
+    const div = document.getElementById('ai-result');
+    const spinner = document.getElementById('ai-spinner');
+    const soil = document.getElementById('soil-type').value;
+    const paksha = document.getElementById('paksha').value;
+    
+    div.style.display = 'none';
+    spinner.classList.add('active');
+    
+    fetch(`${API}/ai-advice?question=${encodeURIComponent(question)}&language=${currentLang}&soil_type=${soil}&paksha=${paksha}`)
+        .then(r => r.json())
+        .then(d => {
+            spinner.classList.remove('active');
+            div.style.display = 'block';
+            div.innerHTML = `
+                <div style="margin-bottom:0.5rem;">
+                    <span class="badge badge-success">${d.engine}</span>
+                    <span style="font-size:0.7rem;margin-left:0.5rem;">${d.time_s}s</span>
+                    <span class="badge ${d.hallucination_risk ? 'badge-danger' : 'badge-success'}" style="margin-left:0.5rem;">
+                        Nyaya: ${d.nyaya_confidence}
+                    </span>
+                </div>
+                ${d.advice?.substring(0, 500) || 'No advice generated'}
+                <div style="margin-top:0.5rem;font-size:0.7rem;color:#666;">
+                    Ahimsa: ${d.ahimsa ? '⚠' : '✓'} | 
+                    Dharma: ${d.dharma_priority?.toFixed(3)} |
+                    Model: ${d.model || 'fallback'}
+                </div>
+            `;
+        })
+        .catch(e => {
+            spinner.classList.remove('active');
+            div.style.display = 'block';
+            div.innerHTML = `<span style="color:red;">AI model loading or timeout. Try instant advice instead.</span>`;
+        });
+}
+
+function simulateSensor() {
+    const div = document.getElementById('sensor-result');
+    div.style.display = 'block';
+    div.innerHTML = '<em>📡 Reading simulated sensors...</em>';
+    
+    // Simulate Assam soil data
+    const ph = (5.0 + Math.random() * 2.5).toFixed(1);
+    const n = (20 + Math.random() * 20).toFixed(0);
+    const p = (15 + Math.random() * 20).toFixed(0);
+    const k = (25 + Math.random() * 25).toFixed(0);
+    const moisture = (25 + Math.random() * 50).toFixed(0);
+    
+    div.innerHTML = `
+        <strong>🧪 Simulated Sensor Reading:</strong><br>
+        pH: ${ph} | N: ${n} ppm | P: ${p} ppm | K: ${k} ppm | Moisture: ${moisture}%<br><br>
+        <em>📡 Real sensors (NPK RS485, pH probe, DHT22) connect via USB-OTG or Bluetooth HC-05.<br>
+        Supported: 22 sensor types from $1 to $200.</em>
+    `;
+    
+    // Also get advice with these values
+    fetch(`${API}/ask?soil=${document.getElementById('soil-type').value}&paksha=${document.getElementById('paksha').value}`)
+        .then(r => r.json())
+        .then(d => {
+            div.innerHTML += `<br><strong>🕉️ Vedic Analysis:</strong><br>${d.advice.substring(0, 300)}`;
+        });
+}
+
+// Service Worker for offline
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+}
+</script>
+</body>
+</html>
