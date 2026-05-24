@@ -251,7 +251,22 @@ def ai_advice():
 
 @app.route('/app')
 def serve_app():
-    return send_from_directory('frontend', 'offline_app.html')
+    return send_from_directory("frontend", "offline_app.html")
+
+@app.route("/quantum-ui")
+def quantum_ui():
+    return send_from_directory("frontend", "quantum_app.html")
+
+@app.route("/quantum")
+def vedic_quantum():
+    from backend.core.vedic_quantum_engine import VedicQuantumEngine
+    engine = VedicQuantumEngine()
+    question = request.args.get("q", "What to plant?")
+    soil = request.args.get("soil", "alluvial")
+    lat = request.args.get("lat", 26.14, type=float)
+    lon = request.args.get("lon", 91.74, type=float)
+    result = engine.query(question, soil_type=soil, lat=lat, lon=lon)
+    return jsonify(result)
 
 if __name__ == '__main__':
     print("=" * 50)

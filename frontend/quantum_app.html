@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>॥ कृषि-वेद क्वांटम ॥</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Yatra+One&family=Tiro+Devanagari+Sanskrit&display=swap');
+
+:root {
+  --om-gold: #c9a050;
+  --saffron: #e87200;
+  --deep-bg: #0a0a0a;
+  --card-bg: rgba(10,5,0,0.85);
+  --text: #e8d5b0;
+  --accent: #ff9933;
+  --sattva: #2ecc71;
+  --rajas: #e67e22;
+  --tamas: #7f8c8d;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--deep-bg);
+  color: var(--text);
+  font-family: 'Tiro Devanagari Sanskrit', 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Animated mandala background */
+.mandala-bg {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255,153,51,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(46,204,113,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 100%, rgba(201,160,80,0.06) 0%, transparent 50%);
+}
+
+.mandala-ring {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 80vmin; height: 80vmin; border-radius: 50%;
+  border: 1px solid rgba(201,160,80,0.08);
+  animation: mandalaSpin 60s linear infinite;
+  pointer-events: none; z-index: 0;
+}
+.mandala-ring:nth-child(2) { width: 65vmin; height: 65vmin; animation-duration: 45s; animation-direction: reverse; }
+.mandala-ring:nth-child(3) { width: 50vmin; height: 50vmin; animation-duration: 30s; }
+
+@keyframes mandalaSpin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+/* Floating particles */
+.particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.particle {
+  position: absolute; font-family: 'Yatra One', cursive;
+  color: rgba(255,153,51,0.15); font-size: 1.5rem;
+  animation: floatUp 8s linear infinite;
+}
+@keyframes floatUp {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.3; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+}
+
+/* Main container */
+.container {
+  max-width: 600px; margin: 0 auto; padding: 0.75rem;
+  position: relative; z-index: 1;
+}
+
+/* Header */
+.header {
+  text-align: center; padding: 1.5rem 0.5rem 0.75rem;
+  background: linear-gradient(180deg, rgba(201,160,80,0.1) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(201,160,80,0.2);
+  margin-bottom: 0.75rem;
+}
+.header .om {
+  font-family: 'Yatra One', cursive; font-size: 3rem;
+  background: linear-gradient(180deg, var(--om-gold), var(--saffron));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: omGlow 3s ease-in-out infinite;
+  display: block; line-height: 1;
+}
+@keyframes omGlow { 0%,100% { opacity:0.6; } 50% { opacity:1; } }
+.header h1 {
+  font-size: 1.3rem; letter-spacing: 3px; margin-top: 0.25rem;
+  background: linear-gradient(90deg, var(--om-gold), var(--saffron), var(--om-gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  font-family: 'Yatra One', cursive;
+}
+.header .sutra { font-size: 0.65rem; opacity: 0.5; letter-spacing: 2px; }
+
+/* Transparent glass cards */
+.card {
+  background: rgba(15,8,0,0.7); backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(201,160,80,0.15);
+  border-radius: 20px; padding: 1rem; margin-bottom: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+/* Sacred geometry divider */
+.sacred-divider {
+  text-align: center; font-size: 0.8rem; opacity: 0.3;
+  padding: 0.25rem 0; letter-spacing: 8px;
+}
+
+/* Transparent inputs */
+.input, .select {
+  width: 100%; padding: 0.7rem 0.9rem; margin-bottom: 0.5rem;
+  background: rgba(0,0,0,0.5); border: 1px solid rgba(201,160,80,0.2);
+  border-radius: 12px; color: var(--text); font-size: 0.9rem;
+  font-family: inherit; transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+.input:focus, .select:focus {
+  border-color: var(--accent); outline: none;
+  box-shadow: 0 0 24px rgba(255,153,51,0.15);
+}
+.input::placeholder { color: rgba(232,213,176,0.3); }
+.select option { background: #1a0a00; color: var(--text); }
+
+/* Buttons */
+.btn {
+  display: block; width: 100%; padding: 0.8rem; border: none; border-radius: 14px;
+  font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 0.4rem;
+  letter-spacing: 1px; transition: all 0.3s; font-family: inherit;
+  position: relative; overflow: hidden;
+}
+.btn-primary {
+  background: linear-gradient(135deg, rgba(255,153,51,0.8), rgba(232,114,0,0.8));
+  color: #fff; backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,153,51,0.3);
+  box-shadow: 0 4px 20px rgba(255,153,51,0.2);
+}
+.btn-secondary {
+  background: rgba(201,160,80,0.1); color: var(--om-gold);
+  border: 1px solid rgba(201,160,80,0.3);
+  backdrop-filter: blur(10px);
+}
+.btn:active { transform: scale(0.96); }
+.btn::after {
+  content: ''; position: absolute; top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.btn:active::after { opacity: 1; }
+
+/* Metrics grid */
+.metrics {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.metric {
+  background: rgba(255,153,51,0.05); border: 1px solid rgba(255,153,51,0.1);
+  border-radius: 12px; padding: 0.6rem; text-align: center;
+  backdrop-filter: blur(10px);
+}
+.metric .value { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+.metric .label { font-size: 0.6rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Response area */
+.response {
+  background: rgba(0,0,0,0.6); border-radius: 16px;
+  padding: 1rem; margin-top: 0.75rem;
+  border-left: 2px solid var(--accent);
+  font-size: 0.85rem; line-height: 1.7;
+  max-height: 55vh; overflow-y: auto;
+  white-space: pre-wrap; backdrop-filter: blur(10px);
+}
+
+/* Guna indicator */
+.guna-bar {
+  display: flex; gap: 3px; margin-bottom: 0.75rem; align-items: center;
+}
+.guna-segment {
+  height: 3px; border-radius: 2px; transition: flex 0.5s;
+}
+.guna-sattva { background: var(--sattva); }
+.guna-rajas { background: var(--rajas); }
+.guna-tamas { background: var(--tamas); }
+.guna-label { font-size: 0.6rem; opacity: 0.5; margin-left: 0.5rem; min-width: 80px; }
+
+/* Om loader */
+.loader {
+  display: none; text-align: center; padding: 1.5rem;
+}
+.loader.active { display: block; }
+.loader-om {
+  font-family: 'Yatra One', cursive; font-size: 2.5rem;
+  animation: omPulse 1.5s ease-in-out infinite;
+  display: inline-block;
+  background: linear-gradient(180deg, var(--om-gold), var(--saffron));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+@keyframes omPulse {
+  0%,100% { transform: scale(0.9); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+.loader-text { font-size: 0.7rem; opacity: 0.4; margin-top: 0.5rem; letter-spacing: 1px; }
+
+/* Sensor grid */
+.sensor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+
+/* Status indicators */
+.status-row { display: flex; justify-content: space-between; font-size: 0.65rem; opacity: 0.5; padding: 0.25rem 0; }
+
+/* Footer */
+.footer {
+  text-align: center; padding: 1rem; font-size: 0.6rem;
+  opacity: 0.3; letter-spacing: 1px;
+}
+.footer .om { font-size: 1.5rem; display: block; margin-bottom: 0.25rem; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(201,160,80,0.3); border-radius: 3px; }
+
+/* Pulse ring for sensors */
+.sensor-pulse {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  margin-right: 6px; animation: pulse 2s infinite;
+}
+.sensor-active { background: var(--sattva); box-shadow: 0 0 8px var(--sattva); }
+.sensor-inactive { background: var(--tamas); }
+@keyframes pulse { 0%,100% { opacity:0.5; } 50% { opacity:1; } }
+</style>
+</head>
+<body>
+
+<div class="mandala-bg"></div>
+<div class="mandala-ring"></div>
+<div class="mandala-ring"></div>
+<div class="mandala-ring"></div>
+<div class="particles" id="particles"></div>
+
+<div class="container">
+
+    <div class="header">
+        <span class="om">ॐ</span>
+        <h1>कृषि-वेद क्वांटम</h1>
+        <p class="sutra">सर्वं खल्विदं ब्रह्म</p>
+    </div>
+
+    <!-- Metrics Card -->
+    <div class="card" id="metrics-card" style="display:none;">
+        <div class="metrics">
+            <div class="metric">
+                <div class="value" id="m-speed">0</div>
+                <div class="label">Milliseconds</div>
+            </div>
+            <div class="metric">
+                <div class="value" id="m-nyaya">0.00</div>
+                <div class="label">Nyaya Confidence</div>
+            </div>
+            <div class="metric">
+                <div class="value" id="m-ahimsa">PURE</div>
+                <div class="label">Ahimsa-108</div>
+            </div>
+            <div class="metric">
+                <div class="value" id="m-ritu">—</div>
+                <div class="label">Ritu</div>
+            </div>
+        </div>
+        <div class="guna-bar">
+            <div class="guna-segment guna-sattva" id="guna-s" style="flex:5"></div>
+            <div class="guna-segment guna-rajas" id="guna-r" style="flex:3"></div>
+            <div class="guna-segment guna-tamas" id="guna-t" style="flex:1"></div>
+            <span class="guna-label" id="guna-label">SATTVA</span>
+        </div>
+    </div>
+
+    <!-- Query Card -->
+    <div class="card">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+            <span style="font-size:1.2rem;">🕉️</span>
+            <span style="font-size:0.8rem;letter-spacing:1px;opacity:0.7;">QUANTUM QUERY</span>
+        </div>
+        
+        <input class="input" id="query" 
+               placeholder="क्या पूछना चाहते हैं? · কি জানতে চান? · What do you want to know?"
+               value="মাটিৰ pH কম, কি কৰিব?">
+        
+        <select class="select" id="soil">
+            <option value="alluvial">🌾 Alluvial · পলি · जलोढ़</option>
+            <option value="laterite">🪨 Laterite · লেটেৰাইট</option>
+            <option value="sandy">🏖 Sandy · বালি · रेतीली</option>
+            <option value="clay">🧱 Clay · কাদামাটি · चिकनी</option>
+            <option value="loamy">🌿 Loamy · দোআঁশ · दोमट</option>
+        </select>
+        
+        <div style="display:flex;gap:0.4rem;">
+            <button class="btn btn-primary" onclick="quantumQuery()" style="flex:2;">
+                🕉️ ANALYZE
+            </button>
+            <button class="btn btn-secondary" onclick="getGPS()" style="flex:1;">
+                📍 GPS
+            </button>
+        </div>
+        
+        <div class="loader" id="loader">
+            <div class="loader-om">ॐ</div>
+            <div class="loader-text">Chitta analyzing · Sphota attention active · Tanmatra fusing</div>
+        </div>
+        
+        <div class="response" id="response" style="display:none;"></div>
+    </div>
+
+    <div class="sacred-divider">॥ ॐ ॥</div>
+
+    <!-- Sensor Card -->
+    <div class="card">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+            <span style="font-size:1rem;">📡</span>
+            <span style="font-size:0.8rem;letter-spacing:1px;opacity:0.7;">SENSOR INPUT</span>
+            <span class="sensor-pulse sensor-inactive" id="sensor-dot"></span>
+        </div>
+        
+        <div class="sensor-grid">
+            <input class="input" id="ph-in" placeholder="pH (5.4)" type="number" step="0.1" min="0" max="14">
+            <input class="input" id="n-in" placeholder="N ppm (25)" type="number" step="1">
+            <input class="input" id="p-in" placeholder="P ppm (18)" type="number" step="1">
+            <input class="input" id="k-in" placeholder="K ppm (40)" type="number" step="1">
+            <input class="input" id="moist-in" placeholder="Moisture % (35)" type="number" step="1" style="grid-column:span 2;">
+        </div>
+        
+        <button class="btn btn-primary" onclick="quantumWithSensors()">
+            📊 ANALYZE WITH SENSORS
+        </button>
+    </div>
+
+    <div class="footer">
+        <span class="om">ॐ</span>
+        Vasudhaiva Kutumbakam · Joydeep Das · Divine Earthly · Assam
+    </div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:5000';
+let currentLocation = null;
+
+// Create floating particles
+(function createParticles() {
+    const container = document.getElementById('particles');
+    const symbols = ['ॐ', '🕉️', '॥', '☸', '✧', '·'];
+    for (let i = 0; i < 20; i++) {
+        const p = document.createElement('span');
+        p.className = 'particle';
+        p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDelay = Math.random() * 8 + 's';
+        p.style.animationDuration = (6 + Math.random() * 8) + 's';
+        p.style.fontSize = (1 + Math.random() * 2) + 'rem';
+        container.appendChild(p);
+    }
+})();
+
+function showLoader() {
+    document.getElementById('loader').classList.add('active');
+    document.getElementById('response').style.display = 'none';
+}
+
+function hideLoader() {
+    document.getElementById('loader').classList.remove('active');
+}
+
+function updateMetrics(data) {
+    document.getElementById('metrics-card').style.display = 'block';
+    document.getElementById('m-speed').textContent = data.inference_ms || '0';
+    document.getElementById('m-nyaya').textContent = (data.nyaya_confidence || 0).toFixed(2);
+    document.getElementById('m-ahimsa').textContent = data.ahimsa || 'PURE';
+    document.getElementById('m-ritu').textContent = data.ritu || '—';
+    
+    // Color Ahimsa
+    const a = document.getElementById('m-ahimsa');
+    a.style.color = data.ahimsa === 'BLOCKED' ? '#e74c3c' : '#2ecc71';
+    
+    // Guna bar
+    const conf = data.nyaya_confidence || 0.5;
+    const s = Math.round(conf * 7);
+    const r = Math.round((1 - conf) * 5 + 2);
+    const t = Math.round((1 - conf) * 3);
+    document.getElementById('guna-s').style.flex = s;
+    document.getElementById('guna-r').style.flex = r;
+    document.getElementById('guna-t').style.flex = t;
+    
+    let gunaLabel, gunaColor;
+    if (conf > 0.8) { gunaLabel = 'SATTVA — Pure Knowledge'; gunaColor = 'var(--sattva)'; }
+    else if (conf > 0.5) { gunaLabel = 'RAJAS — Active Analysis'; gunaColor = 'var(--rajas)'; }
+    else { gunaLabel = 'TAMAS — Verify Input'; gunaColor = 'var(--tamas)'; }
+    const gl = document.getElementById('guna-label');
+    gl.textContent = gunaLabel;
+    gl.style.color = gunaColor;
+}
+
+function displayResponse(data) {
+    hideLoader();
+    const div = document.getElementById('response');
+    div.style.display = 'block';
+    
+    div.innerHTML = `
+        <div style="white-space:pre-wrap;word-wrap:break-word;">${data.advice || '॥ कोई उत्तर नहीं — No response from engine ॥'}</div>
+        <div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid rgba(201,160,80,0.15);font-size:0.6rem;opacity:0.4;">
+            ${data.hallucination_risk ? '⚠ Hallucination Detected' : '✓ Nyaya Verified'} · 
+            ${data.knowledge_sources || 0} Vedic Sources · 
+            Engine: ${data.engine || 'vedic'}
+        </div>
+    `;
+    
+    updateMetrics(data);
+}
+
+function quantumQuery() {
+    showLoader();
+    const q = document.getElementById('query').value;
+    const soil = document.getElementById('soil').value;
+    
+    fetch(`${API}/quantum?q=${encodeURIComponent(q)}&soil=${soil}`)
+        .then(r => r.json())
+        .then(displayResponse)
+        .catch(e => {
+            displayResponse({advice: '॥ Server offline — start with: python3 app.py ॥'});
+        });
+}
+
+function quantumWithSensors() {
+    showLoader();
+    document.getElementById('sensor-dot').className = 'sensor-pulse sensor-active';
+    setTimeout(() => document.getElementById('sensor-dot').className = 'sensor-pulse sensor-inactive', 3000);
+    
+    const q = document.getElementById('query').value;
+    const soil = document.getElementById('soil').value;
+    
+    let url = `${API}/quantum?q=${encodeURIComponent(q)}&soil=${soil}`;
+    const ph = document.getElementById('ph-in').value;
+    const n = document.getElementById('n-in').value;
+    const p = document.getElementById('p-in').value;
+    const k = document.getElementById('k-in').value;
+    const moist = document.getElementById('moist-in').value;
+    
+    if (ph) url += `&ph=${ph}`;
+    if (n) url += `&n=${n}`;
+    if (p) url += `&p=${p}`;
+    if (k) url += `&k=${k}`;
+    if (moist) url += `&moisture=${moist}`;
+    
+    fetch(url)
+        .then(r => r.json())
+        .then(displayResponse)
+        .catch(e => displayResponse({advice: 'Server error'}));
+}
+
+function getGPS() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                currentLocation = pos.coords;
+                document.getElementById('query').value = 
+                    `📍 ${pos.coords.latitude.toFixed(3)}°N, ${pos.coords.longitude.toFixed(3)}°E · What crops grow here?`;
+                quantumQuery();
+            },
+            () => {
+                document.getElementById('query').value = '📍 Location unavailable. Using IP location. What crops?';
+                quantumQuery();
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    }
+}
+
+// Auto-run if URL has query param
+window.onload = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('q')) {
+        document.getElementById('query').value = params.get('q');
+        quantumQuery();
+    }
+};
+</script>
+</body>
+</html>
