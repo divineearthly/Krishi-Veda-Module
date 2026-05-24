@@ -141,6 +141,26 @@ def home():
 def health():
     return jsonify({"status": "healthy", "response_time_ms": 0})
 
+@app.route("/location-vedic")
+def location_vedic():
+    """Get Vedic analysis based on actual GPS location."""
+    from backend.core.live_location_engine import LiveLocationEngine
+    engine = LiveLocationEngine()
+    loc = engine.get_gps_location()
+    geo = engine.reverse_geocode(loc.lat, loc.lon)
+    weather = engine.get_hyperlocal_weather(loc.lat, loc.lon)
+    soil = engine.get_soil_type(loc.lat, loc.lon)
+    vedic = engine.vedic_location_analysis(loc.lat, loc.lon)
+    
+    return jsonify({
+        "location": {"lat": loc.lat, "lon": loc.lon, "source": loc.source},
+        "place": geo,
+        "weather": weather,
+        "soil_type": soil,
+        "vedic": vedic,
+        "timestamp": datetime.now().isoformat()
+    })
+
 @app.route('/weather')
 def weather():
     lat = request.args.get('lat', 26.1445, type=float)
