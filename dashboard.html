@@ -3,254 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divine Earthly Terminal Node</title>
+    <title>Krishi Veda Core Dashboard v2.4</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg: #020503;
-            --panel-bg: rgba(6, 15, 9, 0.7);
-            --accent: #00ff66;
-            --accent-blue: #00f0ff;
-            --accent-dim: rgba(0, 255, 102, 0.15);
-            --border: rgba(0, 255, 10 green, 0.2);
-            --wire: #102416;
-            --text: #dcf5e7;
-            --text-dim: #55755e;
-        }
-        body {
-            font-family: 'SF Pro Display', -apple-system, monospace;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 50% 10%, rgba(0, 255, 102, 0.05), transparent 50%),
-                linear-gradient(rgba(16, 36, 22, 0.15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(16, 36, 22, 0.15) 1px, transparent 1px);
-            background-size: 100% 100%, 25px 25px, 25px 25px;
-        }
-        /* Scanline Overlay Effect */
-        body::after {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 99999;
-            opacity: 0.4;
-            pointer-events: none;
-            background-size: 100% 3px, 3px 100%;
-        }
-        header {
-            background: var(--panel-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--wire);
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        h1 { margin: 0; font-size: 1.1rem; font-weight: 900; letter-spacing: 2px; color: #fff; text-shadow: 0 0 10px rgba(0,255,102,0.3); }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px; }
-        @media(min-width: 768px) { .grid { grid-template-columns: repeat(4, 1fr); } }
-        .card {
-            background: var(--panel-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--wire);
-            padding: 18px;
-            border-radius: 14px;
-            text-align: left;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            position: relative;
-            overflow: hidden;
-        }
-        .card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-        }
-        .card h3 { margin: 0 0 8px 0; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
-        .card .value { font-size: 1.7rem; font-weight: 800; color: #fff; font-family: monospace; }
-        .card .indicator { font-size: 0.65rem; color: var(--accent); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
-        .main-frame { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media(min-width: 992px) { .main-frame { grid-template-columns: 1.2fr 1fr; } }
-        .panel {
-            background: var(--panel-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--wire);
-            border-radius: 16px;
-            padding: 22px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-        }
-        h2 { margin: 0 0 16px 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); display: flex; justify-content: space-between; }
-        textarea {
-            width: 100%; height: 80px; background: rgba(0,0,0,0.4); border: 1px solid var(--wire); border-radius: 10px;
-            color: var(--accent); padding: 12px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box;
-            outline: none; transition: all 0.3s;
-        }
-        textarea:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,255,102,0.1); }
-        button {
-            background: linear-gradient(180deg, var(--accent-dim), transparent); color: var(--accent);
-            border: 1px solid var(--accent); padding: 14px; border-radius: 10px; font-family: monospace;
-            font-weight: bold; width: 100%; margin-top: 12px; cursor: pointer; text-transform: uppercase;
-            letter-spacing: 2px; transition: all 0.2s ease; backdrop-filter: blur(5px);
-        }
-        button:hover { background: var(--accent); color: var(--bg); box-shadow: 0 0 20px rgba(0,255,102,0.4); }
-        button:disabled { border-color: var(--wire); color: var(--text-dim); background: transparent; cursor: not-allowed; }
-        #inference-loader {
-            display: none; font-size: 0.75rem; color: var(--accent-blue); padding: 16px;
-            border: 1px dashed var(--accent-blue); border-radius: 10px; margin-top: 12px;
-            background: rgba(0, 240, 255, 0.02); text-align: center; font-family: monospace;
-        }
-        .log-list { max-height: 400px; overflow-y: auto; padding-right: 4px; }
-        .log-item {
-            background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; margin-bottom: 12px;
-            border: 1px solid var(--wire); transition: border 0.3s;
-        }
-        .log-item:hover { border-color: rgba(0,255,102,0.3); }
-        .log-header { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 8px; }
-        .advice-box { font-size: 0.9rem; line-height: 1.5; color: #fff; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03); margin: 8px 0; }
-        .route-tag { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; }
+        :root { --bg-dark: #0a0f1d; --card-bg: #111a2e; --neon-cyan: #00f2fe; --neon-green: #4facfe; --alert-red: #ff416c; --text-main: #e2e8f0; --mesh-gold: #ff9f43; }
+        body { font-family: 'Courier New', Courier, monospace; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 15px; }
+        .matrix-header { border-bottom: 2px solid var(--neon-cyan); padding-bottom: 10px; margin-bottom: 20px; }
+        .matrix-title { font-size: 1.4rem; font-weight: bold; color: var(--neon-cyan); letter-spacing: 2px; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .metric-card { background: var(--card-bg); border: 1px solid #1e293b; padding: 12px; border-radius: 6px; text-align: center; position: relative; transition: all 0.3s; }
+        .metric-card.alert { border-color: var(--alert-red); box-shadow: 0 0 8px rgba(255, 65, 108, 0.3); }
+        .metric-card.interactive:hover { border-color: var(--mesh-gold); box-shadow: 0 0 8px rgba(255, 159, 67, 0.4); cursor: pointer; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; margin-bottom: 5px; }
+        .metric-value { font-size: 1.5rem; font-weight: bold; margin: 8px 0; color: #fff; }
+        .badge { font-size: 0.65rem; padding: 2px 6px; background: #1e293b; border-radius: 4px; display: inline-block; }
+        .alert-text { color: var(--alert-red); font-weight: bold; animation: blink 1.5s infinite; }
+        .console-box { background: #070a13; border: 1px solid #1e293b; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 12px; }
+        input[type="text"] { flex: 1; background: #111a2e; border: 1px solid #334155; padding: 10px; color: #fff; border-radius: 4px; font-family: inherit; }
+        button { background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan)); border: none; padding: 10px 18px; color: #000; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: inherit; }
+        .chart-container { background: var(--card-bg); border: 1px solid #1e293b; padding: 15px; border-radius: 6px; margin-bottom: 20px; min-height: 220px; }
+        .ledger-entry { background: #151f38; border-left: 3px solid var(--neon-cyan); padding: 10px; margin-bottom: 8px; border-radius: 0 4px 4px 0; font-size: 0.85rem; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     </style>
 </head>
 <body>
 
-    <header>
-        <div>
-            <h1>DIVINE EARTHLY INTELLIGENCE MATRIX</h1>
-            <div style="font-size: 0.65rem; color: var(--text-dim); margin-top: 4px; letter-spacing: 1px;">MODULE: KRISHI VEDA Core v2.2 // SUBSYSTEM: HARD-PROBLEM EXECUTOR</div>
-        </div>
-        <div style="text-align: right; font-family: monospace; font-size: 0.7rem; color: var(--accent);">● COGNITIVE OVERLAY ONLINE</div>
-    </header>
+    <div class="matrix-header">
+        <div class="matrix-title">DIVINE EARTHLY INTELLIGENCE MATRIX</div>
+        <div style="font-size: 0.75rem; color: #64748b;">MODULE: KRISHI VEDA Core v2.4.0 // EDGE NODE ACTIVE</div>
+    </div>
 
-    <div class="grid">
-        <div class="card">
-            <h3>Thermal Lattice</h3>
-            <div class="value" id="val-temp">--°C</div>
-            <div class="indicator">⚡ Core Ingestion Active</div>
+    <div class="grid-container">
+        <div class="metric-card" id="card-moist">
+            <div class="metric-label">Soil Liquid Matrix</div>
+            <div class="metric-value" id="val-moist">--%</div>
+            <div class="badge" id="badge-moist" style="color: var(--neon-cyan);">● Polling...</div>
         </div>
-        <div class="card">
-            <h3>Soil Liquid Matrix</h3>
-            <div class="value" id="val-moist">--%</div>
-            <div class="indicator" id="lbl-moist">Optimal Stable</div>
+        <div class="metric-card" id="card-temp">
+            <div class="metric-label">Thermal Lattice</div>
+            <div class="metric-value" id="val-temp">--°C</div>
+            <div class="badge" style="color: #ff9f43;">⚡ Ingestion</div>
         </div>
-        <div class="card">
-            <h3>Atmospheric Vapor</h3>
-            <div class="value" id="val-humid">--%</div>
-            <div class="indicator">● Bus Routing Stream</div>
+        
+        <div class="metric-card" style="border-color: #54a0ff;">
+            <div class="metric-label">Hardware Bridge</div>
+            <div class="metric-value" style="font-size: 1rem; color: #54a0ff; margin-top: 12px;">ACTIVE_RX</div>
+            <div class="badge" style="color: #54a0ff; margin-top: 8px;">USB/Serial Port</div>
         </div>
-        <div class="card">
-            <h3>Hydrogen Ion (pH)</h3>
-            <div class="value" id="val-ph">--</div>
-            <div class="indicator" style="color: var(--accent-blue);">Buffer Locked</div>
+        <div class="metric-card interactive" onclick="triggerMeshSync()" id="mesh-card">
+            <div class="metric-label">P2P Mesh Network</div>
+            <div class="metric-value" style="font-size: 1rem; color: var(--mesh-gold); margin-top: 12px;">[ SYNC NODES ]</div>
+            <div class="badge" style="background: var(--mesh-gold); color: #000; margin-top: 8px;" id="mesh-status">Tap to Align</div>
         </div>
     </div>
 
-    <div class="main-frame">
-        <div class="panel">
-            <h2><span>Vedic Tensor Compute Port</span><span>0x7E</span></h2>
-            <textarea id="prompt-input">Ahimsa-108 Protocol Active. Natural pest control for organic paddy fields:</textarea>
-            <button id="submit-btn" onclick="triggerInference()">Engage Matrix Loop</button>
-            <div id="inference-loader">◆ INTERCEPTING COGNITIVE STATES // DRIVING CORES AT 3.9 MOPS...</div>
-        </div>
-
-        <div class="panel">
-            <h2><span>State Vector Ledger Archive</span><span id="ledger-count">ITEMS: 0</span></h2>
-            <div class="log-list" id="advisory-history-container">Awaiting operational vectors...</div>
-        </div>
+    <div class="chart-container">
+        <canvas id="telemetryChart"></canvas>
     </div>
+
+    <div class="console-box">
+        <div class="metric-label" style="margin-bottom: 8px;">Vedic Tensor Compute Port [0x7E]</div>
+        <div class="input-group">
+            <input type="text" id="promptInput" placeholder="Enter agricultural inquiry...">
+            <button onclick="engageMatrixLoop()">Engage Matrix Loop</button>
+        </div>
+        <div id="consoleOutput" style="font-size: 0.85rem; color: var(--neon-cyan); min-height: 20px;"></div>
+    </div>
+
+    <div class="matrix-title" style="font-size: 1rem; margin-bottom: 10px;">State Vector Ledger Archive</div>
+    <div id="ledgerArchive"></div>
 
     <script>
-        async function updateTelemetryDisplay() {
+        const ctx = document.getElementById('telemetryChart').getContext('2d');
+        const telemetryChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'Moisture (%)', borderColor: '#00f2fe', data: [], tension: 0.2, yAxisID: 'y' },
+                    { label: 'Temp (°C)', borderColor: '#ff416c', data: [], tension: 0.2, yAxisID: 'y' }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: '#1e293b' }, ticks: { color: '#fff' } }
+                }
+            }
+        });
+
+        async function fetchTelemetry() {
             try {
-                const res = await fetch('/api/v1/sensors');
-                if(!res.ok) return;
-                const data = await res.json();
-                if(data.telemetry && data.telemetry.length > 0) {
-                    const top = data.telemetry[0];
-                    document.getElementById('val-temp').innerText = `${top.temp.toFixed(1)}°C`;
-                    document.getElementById('val-moist').innerText = `${top.moist.toFixed(1)}%`;
-                    document.getElementById('val-humid').innerText = `${top.humid.toFixed(0)}%`;
-                    document.getElementById('val-ph').innerText = top.ph.toFixed(1);
-                    
-                    const mLabel = document.getElementById('lbl-moist');
-                    if (top.moist < 40) {
-                        mLabel.innerText = "🚨 LOW MATRIX WARNING"; mLabel.style.color = "#ffb300";
+                const response = await fetch('/api/v1/sensors');
+                const data = await response.json();
+                if (data.telemetry && data.telemetry.length > 0) {
+                    const latest = data.telemetry[0];
+                    document.getElementById('val-temp').innerText = latest.temp + '°C';
+                    document.getElementById('val-moist').innerText = latest.moist + '%';
+
+                    const moistCard = document.getElementById('card-moist');
+                    const moistBadge = document.getElementById('badge-moist');
+                    if (latest.moist < 40.0) {
+                        moistCard.classList.add('alert');
+                        moistBadge.innerHTML = '<span class="alert-text">🚨 LOW MATRIX</span>';
                     } else {
-                        mLabel.innerText = "● OPTIMAL STABLE STATUS"; mLabel.style.color = "var(--accent)";
+                        moistCard.classList.remove('alert');
+                        moistBadge.innerHTML = '● OPTIMAL STABLE';
                     }
+
+                    const history = [...data.telemetry].reverse();
+                    telemetryChart.data.labels = history.map(h => h.time.split(' ')[1] || h.time);
+                    telemetryChart.data.datasets[0].data = history.map(h => h.moist);
+                    telemetryChart.data.datasets[1].data = history.map(h => h.temp);
+                    telemetryChart.update();
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Telemetry link dropped:", e); }
         }
 
-        async function updateHistoryDisplay() {
+        async function fetchLedger() {
             try {
-                const res = await fetch('/api/v1/history');
-                if(!res.ok) return;
-                const data = await res.json();
-                const container = document.getElementById('advisory-history-container');
-                document.getElementById('ledger-count').innerText = `ITEMS: ${data.history ? data.history.length : 0}`;
-                
-                if(data.history && data.history.length > 0) {
-                    container.innerHTML = data.history.map(item => {
-                        const isCached = parseFloat(item.latency) < 0.01;
-                        const targetColor = isCached ? "var(--accent-blue)" : "var(--accent)";
-                        const pathString = isCached ? "Vilokanam Heuristics Bypass" : "Vedic Tensor Compute Engine";
-                        
-                        return `
-                            <div class="log-item">
-                                <div class="log-header">
-                                    <span>VECTOR: 0x${item.id.toString(16).toUpperCase()} // ${item.time}</span>
-                                    <span style="color: ${targetColor}; font-family: monospace; font-weight: bold;">p_artha: ${item.latency}</span>
-                                </div>
-                                <div style="font-size: 0.7rem; color: var(--text-dim);">PROMPT: ${item.prompt}</div>
-                                <div class="advice-box">${item.advice}</div>
-                                <div class="route-tag" style="color: ${targetColor};">
-                                    <span>● CORE_ROUTE: ${pathString}</span>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    container.innerHTML = "<div style='color: var(--text-dim); font-size: 0.8rem;'>Ledger context is clean. Empty storage state.</div>";
-                }
-            } catch (e) { console.error(e); }
+                const response = await fetch('/api/v1/history');
+                const data = await response.json();
+                const archive = document.getElementById('ledgerArchive');
+                archive.innerHTML = '';
+                data.history.forEach(v => {
+                    archive.innerHTML += `
+                        <div class="ledger-entry">
+                            <strong>VECTOR: 0x${v.id}</strong> // ${v.time} | <em>Latency: ${v.latency}</em><br>
+                            <span style="color:#94a3b8">PROMPT:</span> ${v.prompt}<br>
+                            <span style="color:var(--neon-cyan)">ADVICE:</span> ${v.advice}
+                        </div>`;
+                });
+            } catch (e) { console.error("Ledger trace read failure:", e); }
         }
 
-        async function triggerInference() {
-            const promptInput = document.getElementById('prompt-input');
-            const btn = document.getElementById('submit-btn');
-            const loader = document.getElementById('inference-loader');
-            
-            if(!promptInput.value.trim()) return;
-            btn.disabled = true; loader.style.display = 'block';
+        async function engageMatrixLoop() {
+            const promptInput = document.getElementById('promptInput');
+            const outputBox = document.getElementById('consoleOutput');
+            const prompt = promptInput.value.trim();
+            if(!prompt) return;
 
+            outputBox.innerText = "⚡ Routing token matrices across core tensor lanes...";
             try {
                 const res = await fetch('/api/v1/advisory', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ prompt: promptInput.value, max_tokens: 64 })
+                    body: JSON.stringify({ prompt: prompt, max_tokens: 64 })
                 });
-                
+                const result = await res.json();
+                outputBox.innerText = `[Source: ${result.source}] Execution complete.`;
+                promptInput.value = '';
+                fetchLedger();
+            } catch (e) { outputBox.innerText = "[!] Pipeline Intercept Error."; }
+        }
+
+        async function triggerMeshSync() {
+            const statusBadge = document.getElementById('mesh-status');
+            statusBadge.innerText = "Exporting...";
+            try {
+                const res = await fetch('/api/v1/mesh/export');
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || "Tensor pipeline timeout error.");
-                
-                promptInput.value = "";
-                await updateHistoryDisplay();
+                console.log("Mesh Data Packets Ready:", data);
+                setTimeout(() => { statusBadge.innerText = "Aligned 🟢"; }, 800);
+                setTimeout(() => { statusBadge.innerText = "Tap to Align"; }, 3000);
             } catch (e) {
-                alert(`[!] Quantum Execution Intercepted:\n${e.message}\n\nFixing core parameters... Try running prompt again.`);
-            } finally {
-                btn.disabled = false; loader.style.display = 'none';
+                statusBadge.innerText = "Link Failed 🔴";
             }
         }
 
-        updateTelemetryDisplay(); updateHistoryDisplay();
-        setInterval(updateTelemetryDisplay, 4000);
+        setInterval(fetchTelemetry, 4000);
+        setInterval(fetchLedger, 5000);
+        fetchTelemetry(); fetchLedger();
     </script>
 </body>
 </html>
