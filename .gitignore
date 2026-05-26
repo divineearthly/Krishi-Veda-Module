@@ -1,5 +1,5 @@
-vedic_engine/kernels/build_x86_64/
-vedic_engine/kernels/vedic_kernels.so
-__pycache__/
-*.pyc
 *.gguf
+*.db
+__pycache__/
+*.log
+.DS_Store

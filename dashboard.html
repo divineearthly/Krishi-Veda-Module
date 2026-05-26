@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divine Earthly Terminal Node</title>
+    <style>
+        :root {
+            --bg: #020503;
+            --panel-bg: rgba(6, 15, 9, 0.7);
+            --accent: #00ff66;
+            --accent-blue: #00f0ff;
+            --accent-dim: rgba(0, 255, 102, 0.15);
+            --border: rgba(0, 255, 10 green, 0.2);
+            --wire: #102416;
+            --text: #dcf5e7;
+            --text-dim: #55755e;
+        }
+        body {
+            font-family: 'SF Pro Display', -apple-system, monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 10%, rgba(0, 255, 102, 0.05), transparent 50%),
+                linear-gradient(rgba(16, 36, 22, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 36, 22, 0.15) 1px, transparent 1px);
+            background-size: 100% 100%, 25px 25px, 25px 25px;
+        }
+        /* Scanline Overlay Effect */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            opacity: 0.4;
+            pointer-events: none;
+            background-size: 100% 3px, 3px 100%;
+        }
+        header {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--wire);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 { margin: 0; font-size: 1.1rem; font-weight: 900; letter-spacing: 2px; color: #fff; text-shadow: 0 0 10px rgba(0,255,102,0.3); }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px; }
+        @media(min-width: 768px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+        .card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--wire);
+            padding: 18px;
+            border-radius: 14px;
+            text-align: left;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+        .card h3 { margin: 0 0 8px 0; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
+        .card .value { font-size: 1.7rem; font-weight: 800; color: #fff; font-family: monospace; }
+        .card .indicator { font-size: 0.65rem; color: var(--accent); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+        .main-frame { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media(min-width: 992px) { .main-frame { grid-template-columns: 1.2fr 1fr; } }
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--wire);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        h2 { margin: 0 0 16px 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); display: flex; justify-content: space-between; }
+        textarea {
+            width: 100%; height: 80px; background: rgba(0,0,0,0.4); border: 1px solid var(--wire); border-radius: 10px;
+            color: var(--accent); padding: 12px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box;
+            outline: none; transition: all 0.3s;
+        }
+        textarea:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,255,102,0.1); }
+        button {
+            background: linear-gradient(180deg, var(--accent-dim), transparent); color: var(--accent);
+            border: 1px solid var(--accent); padding: 14px; border-radius: 10px; font-family: monospace;
+            font-weight: bold; width: 100%; margin-top: 12px; cursor: pointer; text-transform: uppercase;
+            letter-spacing: 2px; transition: all 0.2s ease; backdrop-filter: blur(5px);
+        }
+        button:hover { background: var(--accent); color: var(--bg); box-shadow: 0 0 20px rgba(0,255,102,0.4); }
+        button:disabled { border-color: var(--wire); color: var(--text-dim); background: transparent; cursor: not-allowed; }
+        #inference-loader {
+            display: none; font-size: 0.75rem; color: var(--accent-blue); padding: 16px;
+            border: 1px dashed var(--accent-blue); border-radius: 10px; margin-top: 12px;
+            background: rgba(0, 240, 255, 0.02); text-align: center; font-family: monospace;
+        }
+        .log-list { max-height: 400px; overflow-y: auto; padding-right: 4px; }
+        .log-item {
+            background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; margin-bottom: 12px;
+            border: 1px solid var(--wire); transition: border 0.3s;
+        }
+        .log-item:hover { border-color: rgba(0,255,102,0.3); }
+        .log-header { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 8px; }
+        .advice-box { font-size: 0.9rem; line-height: 1.5; color: #fff; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03); margin: 8px 0; }
+        .route-tag { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>DIVINE EARTHLY INTELLIGENCE MATRIX</h1>
+            <div style="font-size: 0.65rem; color: var(--text-dim); margin-top: 4px; letter-spacing: 1px;">MODULE: KRISHI VEDA Core v2.2 // SUBSYSTEM: HARD-PROBLEM EXECUTOR</div>
+        </div>
+        <div style="text-align: right; font-family: monospace; font-size: 0.7rem; color: var(--accent);">● COGNITIVE OVERLAY ONLINE</div>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Thermal Lattice</h3>
+            <div class="value" id="val-temp">--°C</div>
+            <div class="indicator">⚡ Core Ingestion Active</div>
+        </div>
+        <div class="card">
+            <h3>Soil Liquid Matrix</h3>
+            <div class="value" id="val-moist">--%</div>
+            <div class="indicator" id="lbl-moist">Optimal Stable</div>
+        </div>
+        <div class="card">
+            <h3>Atmospheric Vapor</h3>
+            <div class="value" id="val-humid">--%</div>
+            <div class="indicator">● Bus Routing Stream</div>
+        </div>
+        <div class="card">
+            <h3>Hydrogen Ion (pH)</h3>
+            <div class="value" id="val-ph">--</div>
+            <div class="indicator" style="color: var(--accent-blue);">Buffer Locked</div>
+        </div>
+    </div>
+
+    <div class="main-frame">
+        <div class="panel">
+            <h2><span>Vedic Tensor Compute Port</span><span>0x7E</span></h2>
+            <textarea id="prompt-input">Ahimsa-108 Protocol Active. Natural pest control for organic paddy fields:</textarea>
+            <button id="submit-btn" onclick="triggerInference()">Engage Matrix Loop</button>
+            <div id="inference-loader">◆ INTERCEPTING COGNITIVE STATES // DRIVING CORES AT 3.9 MOPS...</div>
+        </div>
+
+        <div class="panel">
+            <h2><span>State Vector Ledger Archive</span><span id="ledger-count">ITEMS: 0</span></h2>
+            <div class="log-list" id="advisory-history-container">Awaiting operational vectors...</div>
+        </div>
+    </div>
+
+    <script>
+        async function updateTelemetryDisplay() {
+            try {
+                const res = await fetch('/api/v1/sensors');
+                if(!res.ok) return;
+                const data = await res.json();
+                if(data.telemetry && data.telemetry.length > 0) {
+                    const top = data.telemetry[0];
+                    document.getElementById('val-temp').innerText = `${top.temp.toFixed(1)}°C`;
+                    document.getElementById('val-moist').innerText = `${top.moist.toFixed(1)}%`;
+                    document.getElementById('val-humid').innerText = `${top.humid.toFixed(0)}%`;
+                    document.getElementById('val-ph').innerText = top.ph.toFixed(1);
+                    
+                    const mLabel = document.getElementById('lbl-moist');
+                    if (top.moist < 40) {
+                        mLabel.innerText = "🚨 LOW MATRIX WARNING"; mLabel.style.color = "#ffb300";
+                    } else {
+                        mLabel.innerText = "● OPTIMAL STABLE STATUS"; mLabel.style.color = "var(--accent)";
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function updateHistoryDisplay() {
+            try {
+                const res = await fetch('/api/v1/history');
+                if(!res.ok) return;
+                const data = await res.json();
+                const container = document.getElementById('advisory-history-container');
+                document.getElementById('ledger-count').innerText = `ITEMS: ${data.history ? data.history.length : 0}`;
+                
+                if(data.history && data.history.length > 0) {
+                    container.innerHTML = data.history.map(item => {
+                        const isCached = parseFloat(item.latency) < 0.01;
+                        const targetColor = isCached ? "var(--accent-blue)" : "var(--accent)";
+                        const pathString = isCached ? "Vilokanam Heuristics Bypass" : "Vedic Tensor Compute Engine";
+                        
+                        return `
+                            <div class="log-item">
+                                <div class="log-header">
+                                    <span>VECTOR: 0x${item.id.toString(16).toUpperCase()} // ${item.time}</span>
+                                    <span style="color: ${targetColor}; font-family: monospace; font-weight: bold;">p_artha: ${item.latency}</span>
+                                </div>
+                                <div style="font-size: 0.7rem; color: var(--text-dim);">PROMPT: ${item.prompt}</div>
+                                <div class="advice-box">${item.advice}</div>
+                                <div class="route-tag" style="color: ${targetColor};">
+                                    <span>● CORE_ROUTE: ${pathString}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = "<div style='color: var(--text-dim); font-size: 0.8rem;'>Ledger context is clean. Empty storage state.</div>";
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function triggerInference() {
+            const promptInput = document.getElementById('prompt-input');
+            const btn = document.getElementById('submit-btn');
+            const loader = document.getElementById('inference-loader');
+            
+            if(!promptInput.value.trim()) return;
+            btn.disabled = true; loader.style.display = 'block';
+
+            try {
+                const res = await fetch('/api/v1/advisory', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ prompt: promptInput.value, max_tokens: 64 })
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Tensor pipeline timeout error.");
+                
+                promptInput.value = "";
+                await updateHistoryDisplay();
+            } catch (e) {
+                alert(`[!] Quantum Execution Intercepted:\n${e.message}\n\nFixing core parameters... Try running prompt again.`);
+            } finally {
+                btn.disabled = false; loader.style.display = 'none';
+            }
+        }
+
+        updateTelemetryDisplay(); updateHistoryDisplay();
+        setInterval(updateTelemetryDisplay, 4000);
+    </script>
+</body>
+</html>
