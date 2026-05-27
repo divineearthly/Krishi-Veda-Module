@@ -18,7 +18,7 @@ jobs:
           python-version: "3.11"
       - run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq python3-pip python3-dev build-essential git autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev zip unzip
+          sudo apt-get install -y -qq python3-pip python3-dev build-essential git autoconf automake libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev zip unzip
       - run: pip install buildozer cython virtualenv flask requests
       - run: cd $GITHUB_WORKSPACE && yes | buildozer init 2>/dev/null || true
         timeout-minutes: 5
@@ -31,20 +31,17 @@ jobs:
         timeout-minutes: 10
       - run: cd $GITHUB_WORKSPACE && yes | buildozer android debug
         timeout-minutes: 45
-      - name: Check APK exists
-        run: ls -lh bin/*.apk 2>/dev/null || echo "No APK found in bin/"
       - uses: actions/upload-artifact@v4
         with:
           name: Krishi-Veda-APK
           path: bin/*.apk
-          if-no-files-found: warn
       - name: Create Release
         if: success()
         uses: softprops/action-gh-release@v1
         with:
           tag_name: nightly-${{ github.run_number }}
           name: "Krishi-Veda Build #${{ github.run_number }}"
-          body: "🕉️ Sovereign Agricultural AI — Free for all farmers. Dharma-licensed. Auto-built from main branch."
+          body: "🕉️ Sovereign Agricultural AI — Free for all farmers. Dharma-licensed."
           files: bin/*.apk
           prerelease: true
         env:
