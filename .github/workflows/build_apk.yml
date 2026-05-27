@@ -1,0 +1,46 @@
+name: Build APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-pip python3-dev build-essential git autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev zip unzip
+      - run: pip install buildozer cython virtualenv flask requests
+      - run: cd $GITHUB_WORKSPACE && yes | buildozer init 2>/dev/null || true
+        timeout-minutes: 5
+      - run: |
+          D=$HOME/.buildozer/android/platform/android-sdk
+          mkdir -p $D
+          for M in "$D/cmdline-tools/latest/bin/sdkmanager" "$D/tools/bin/sdkmanager"; do
+            [ -f "$M" ] && yes | $M --licenses && $M "build-tools;34.0.0" "platforms;android-33"
+          done
+        timeout-minutes: 10
+      - run: cd $GITHUB_WORKSPACE && yes | buildozer android debug
+        timeout-minutes: 45
+      - uses: actions/upload-artifact@v4
+        with:
+          name: APK
+          path: bin/*.apk
+      - if: success()
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: "Krishi-Veda v${{ github.run_number }}"
+          body: "🕉️ Sovereign Agricultural AI — Free for all farmers. Dharma-licensed."
+          files: bin/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
