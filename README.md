@@ -70,3 +70,24 @@ Derived from **Vriksh Ayurveda** (the ancient Indian science of plant life), **K
 
 From **Taittiriya Upanishad** (Panchakosha) and **Samkhya Philosophy** (3 Gunas):
 
+
+---
+
+## 🕉️ Dharma Distribution
+
+Krishi-Veda is **free for all farmers, forever.** It is not a commercial product.
+
+### How to Share (No Internet Required)
+1. Download `krishi_veda_offline.tar.gz` (199MB)
+2. Copy to an SD card or share via Bluetooth
+3. Give to a farmer. That's it.
+
+### License
+**Dharma Public License v1.0** — Free for all living beings. Cannot be sold.
+See [LICENSE](LICENSE) and [DHARMA.md](DHARMA.md) for the full terms.
+
+### Support This Work
+- Share with one farmer
+- Translate into your language
+- Report what helps and what doesn't
+- That is the only payment we ask
