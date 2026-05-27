@@ -1,0 +1,15 @@
+{
+  "app_version": "2.0.0",
+  "kernel_version": "1.0.0",
+  "model_version": "1.0.0",
+  "data_version": "1.0.0",
+  "kernel_changes": "Urdhva Tiryagbhyam 123x speedup + Nikhilam softmax + Shunyam norm",
+  "kernel_size_mb": 5,
+  "model_changes": "Vedic-Transformer-Core Q2 144MB — optimized for ARM64 phones",
+  "model_size_mb": 144,
+  "data_changes": "MSP prices updated May 2025 + Assam crop calendar",
+  "data_size_mb": 2,
+  "min_android_version": 7.0,
+  "release_date": "2025-05-28",
+  "languages": ["en", "as", "hi", "bn"]
+}

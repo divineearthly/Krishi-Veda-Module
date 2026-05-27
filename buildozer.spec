@@ -1,21 +1,23 @@
 [app]
-title = Krishi Veda
+title = Krishi-Veda
 package.name = krishiveda
-package.domain = org.earthly
+package.domain = org.earthly.divine
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,json,db,html,gguf,so,tflite
+source.include_exts = py,png,jpg,html,css,js,json,md,gguf,so
 version = 2.0.0
-requirements = python3,kivy==2.1.0,fastapi,uvicorn,flask,requests,pydantic,httpx,aiofiles
+requirements = python3,flask,requests,httpx
 orientation = portrait
-fullscreen = 0
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,RECORD_AUDIO
-android.api = 33
-android.minapi = 24
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,BLUETOOTH,BLUETOOTH_ADMIN,ACCESS_FINE_LOCATION
+android.api = 26
+android.minapi = 21
 android.ndk = 25b
-android.sdk = 33
+android.sdk = 34
+android.gradle_dependencies = androidx.core:core:1.12.0
 android.arch = arm64-v8a
 android.allow_backup = True
-android.presplash_color = #2D5016
+fullscreen = 0
+presplash.color = #1a3300
+android.presplash_color = #1a3300
 
 [buildozer]
 log_level = 2
