@@ -16,37 +16,26 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install dependencies
-        run: |
+      - run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq \
-            python3-pip python3-dev build-essential \
-            git autoconf automake libtool pkg-config \
-            zlib1g zlib1g-dev libncurses-dev \
-            cmake libffi-dev libssl-dev zip unzip \
-            libltdl-dev libbz2-dev libreadline-dev
-      - run: pip install buildozer cython virtualenv flask requests markupsafe
-      - name: Build APK
-        run: |
-          cd $GITHUB_WORKSPACE
+          sudo apt-get install -y -qq python3-pip python3-dev build-essential git autoconf automake libtool pkg-config zlib1g zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev zip unzip
+      - run: pip install buildozer cython virtualenv flask requests
+      - run: |
           export CFLAGS="-I/usr/include"
           export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
-          find .buildozer -name "gradlew" -exec chmod +x {} \; 2>/dev/null
           yes | buildozer android debug
         timeout-minutes: 75
-      - name: Find APK
-        run: find . -name "*.apk" -type f 2>/dev/null || echo "No APK"
+      - run: find . -name "*.apk" -type f 2>/dev/null || echo "No APK"
       - uses: actions/upload-artifact@v4
         with:
-          name: Krishi-Veda-APK
+          name: APK
           path: "**/*.apk"
-      - name: Create Release
-        if: success()
+      - if: success()
         uses: softprops/action-gh-release@v1
         with:
           tag_name: nightly-${{ github.run_number }}
-          name: "Krishi-Veda Build #${{ github.run_number }}"
-          body: "🕉️ Sovereign Agricultural AI — Free for all farmers."
+          name: "Krishi-Veda #${{ github.run_number }}"
+          body: "🕉️ Free for all farmers"
           files: "**/*.apk"
           prerelease: true
         env:
