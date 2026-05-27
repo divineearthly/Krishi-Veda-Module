@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -20,12 +20,14 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq python3-pip python3-dev build-essential git autoconf automake libtool pkg-config zlib1g zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev zip unzip
       - run: pip install buildozer cython virtualenv flask requests
-      - run: |
-          export CFLAGS="-I/usr/include"
-          export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
+      - name: Build with system Android SDK
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/27.3.13750724
           yes | buildozer android debug
-        timeout-minutes: 75
-      - run: find . -name "*.apk" -type f 2>/dev/null || echo "No APK"
+        timeout-minutes: 50
+      - run: find . -name "*.apk" -type f
       - uses: actions/upload-artifact@v4
         with:
           name: APK
