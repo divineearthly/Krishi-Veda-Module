@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install all dependencies including zlib
+      - name: Install dependencies
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
@@ -25,25 +25,24 @@ jobs:
             zlib1g zlib1g-dev libncurses-dev \
             cmake libffi-dev libssl-dev zip unzip \
             libltdl-dev libbz2-dev libreadline-dev
-          # Verify zlib headers exist
-          ls -la /usr/include/zlib.h
-          pkg-config --libs zlib
       - run: pip install buildozer cython virtualenv flask requests
-      - name: Build APK with explicit zlib path
+      - name: Build APK
         run: |
           cd $GITHUB_WORKSPACE
           export CFLAGS="-I/usr/include"
           export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
+          yes | buildozer android debug 2>&1 || true
+          # Fix gradlew permissions if buildozer created the dist
+          find .buildozer -name "gradlew" -exec chmod +x {} \; 2>/dev/null
+          # Retry if first build failed
           yes | buildozer android debug
         timeout-minutes: 75
-      - name: Check APK exists
-        run: |
-          find . -name "*.apk" -type f 2>/dev/null || echo "No APK found"
-          ls -lh bin/ 2>/dev/null || echo "No bin directory"
+      - name: Find APK
+        run: find . -name "*.apk" -type f 2>/dev/null || echo "No APK"
       - uses: actions/upload-artifact@v4
         with:
           name: Krishi-Veda-APK
-          path: bin/*.apk
+          path: "**/*.apk"
       - name: Create Release
         if: success()
         uses: softprops/action-gh-release@v1
@@ -51,7 +50,7 @@ jobs:
           tag_name: nightly-${{ github.run_number }}
           name: "Krishi-Veda Build #${{ github.run_number }}"
           body: "🕉️ Sovereign Agricultural AI — Free for all farmers."
-          files: bin/*.apk
+          files: "**/*.apk"
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
