@@ -25,16 +25,13 @@ jobs:
             zlib1g zlib1g-dev libncurses-dev \
             cmake libffi-dev libssl-dev zip unzip \
             libltdl-dev libbz2-dev libreadline-dev
-      - run: pip install buildozer cython virtualenv flask requests
+      - run: pip install buildozer cython virtualenv flask requests markupsafe
       - name: Build APK
         run: |
           cd $GITHUB_WORKSPACE
           export CFLAGS="-I/usr/include"
           export LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
-          yes | buildozer android debug 2>&1 || true
-          # Fix gradlew permissions if buildozer created the dist
           find .buildozer -name "gradlew" -exec chmod +x {} \; 2>/dev/null
-          # Retry if first build failed
           yes | buildozer android debug
         timeout-minutes: 75
       - name: Find APK
