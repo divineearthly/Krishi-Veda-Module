@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Krishi-Veda</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #f5f5f0; padding: 12px; }
+        .header { text-align: center; padding: 15px 0; }
+        .header h1 { color: #2D5016; font-size: 24px; }
+        .card { background: white; border-radius: 12px; padding: 14px; margin: 8px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        button { width: 100%; padding: 12px; margin: 6px 0; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .btn-go { background: #2D5016; color: white; }
+        .btn-quick { background: #e8f5e9; color: #2D5016; }
+        .result { background: #f0f7f0; padding: 12px; border-radius: 8px; margin: 8px 0; white-space: pre-line; font-size: 14px; line-height: 1.4; }
+        .status { text-align: center; font-size: 11px; color: #999; margin-top: 6px; }
+        .row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .row button { flex: 1; min-width: 80px; font-size: 12px; padding: 10px; }
+        .error { background: #ffe0e0; color: #c00; padding: 10px; border-radius: 8px; margin: 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌾 Krishi-Veda</h1>
+        <p style="color:#666;font-size:13px">Sovereign Agricultural AI</p>
+    </div>
+    
+    <div class="card">
+        <input type="text" id="q" placeholder="Ask your farming question..." autocomplete="off">
+        <button class="btn-go" onclick="ask()">🔍 Get Advice</button>
+        <div id="r" class="result" style="display:none"></div>
+        <div id="err" class="error" style="display:none"></div>
+    </div>
+    
+    <div class="card">
+        <div class="row">
+            <button class="btn-quick" onclick="q('best fertilizer for rice')">🌾 Fertilizer</button>
+            <button class="btn-quick" onclick="q('organic pest control')">🐛 Pests</button>
+            <button class="btn-quick" onclick="q('when to plant rice in Assam')">📅 Planting</button>
+            <button class="btn-quick" onclick="q('how to improve soil health')">🧪 Soil</button>
+        </div>
+        <div id="r2" class="result" style="display:none"></div>
+    </div>
+    
+    <div class="status" id="s">🟢 Type a question and tap Get Advice</div>
+
+    <script>
+        // Auto-detect the correct API URL
+        const API = window.location.origin + '';
+        
+        async function ask() {
+            const query = document.getElementById('q').value.trim();
+            if (!query) return;
+            
+            document.getElementById('s').innerText = '⏳ Getting advice...';
+            document.getElementById('r').style.display = 'none';
+            document.getElementById('err').style.display = 'none';
+            
+            try {
+                // Try multiple possible URLs
+                const urls = [
+                    'http://localhost:5000/ask?query=',
+                    'http://127.0.0.1:5000/ask?query=',
+                    '/ask?query='
+                ];
+                
+                let data = null;
+                for (const base of urls) {
+                    try {
+                        const res = await fetch(base + encodeURIComponent(query));
+                        data = await res.json();
+                        break;
+                    } catch(e) {
+                        continue;
+                    }
+                }
+                
+                if (data && data.advice) {
+                    document.getElementById('r').innerText = data.advice;
+                    document.getElementById('r').style.display = 'block';
+                    document.getElementById('s').innerText = '🟢 Ready | ' + (data.inference_ms || 0) + 'ms';
+                } else {
+                    throw new Error('No advice received');
+                }
+            } catch(e) {
+                document.getElementById('err').innerHTML = 
+                    '<b>Cannot connect to server</b><br><br>' +
+                    'Make sure Krishi-Veda is running:<br>' +
+                    '<code>cd ~/Krishi-Veda-Module && python3 app.py</code><br><br>' +
+                    'Then refresh this page.';
+                document.getElementById('err').style.display = 'block';
+                document.getElementById('s').innerText = '🔴 Connection Error';
+            }
+        }
+        
+        async function q(query) {
+            document.getElementById('q').value = query;
+            await ask();
+        }
+        
+        // Test connection on load
+        fetch('http://localhost:5000/health')
+            .then(r => r.json())
+            .then(d => {
+                if (d.status === 'healthy') {
+                    document.getElementById('s').innerText = '🟢 Connected | Ready for questions';
+                }
+            })
+            .catch(() => {
+                document.getElementById('s').innerText = '🔴 Server not detected - start server first';
+            });
+    </script>
+</body>
+</html>

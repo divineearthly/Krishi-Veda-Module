@@ -1,0 +1,24 @@
+{
+  "default_model": "krishi-veda-135m",
+  "models": {
+    "krishi-veda-135m": {
+      "path": "/storage/emulated/0/Download/krishi-veda-135m-f16.gguf",
+      "size_mb": 259,
+      "speed_toks": 16.8,
+      "use_case": "real_time_farmer_queries"
+    },
+    "vedic_model": {
+      "path": "/storage/emulated/0/vedic_model.gguf",
+      "size_mb": 469,
+      "speed_toks": 13.3,
+      "use_case": "quality_advice"
+    },
+    "vedic_model_q2": {
+      "path": "/data/data/com.termux/files/home/vedic_model_q2.gguf",
+      "size_mb": 396,
+      "speed_toks": 15.4,
+      "use_case": "low_memory_devices"
+    }
+  },
+  "llama_dir": "/data/data/com.termux/files/home/llama-b9297"
+}

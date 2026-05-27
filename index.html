@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2D5016">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Krishi-Veda</title>
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, sans-serif;
+            background: #f5f5f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .app {
+            width: 100%;
+            max-width: 450px;
+            padding: 16px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .header h1 { color: #2D5016; font-size: 28px; }
+        .header p { color: #666; font-size: 13px; margin-top: 4px; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+        input:focus { border-color: #2D5016; }
+        button {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-primary { background: #2D5016; color: white; }
+        .btn-secondary { background: #e8f5e9; color: #2D5016; }
+        .result {
+            background: #f0f7f0;
+            padding: 14px;
+            border-radius: 10px;
+            margin: 10px 0;
+            white-space: pre-line;
+            font-size: 15px;
+            line-height: 1.5;
+            display: none;
+        }
+        .quick-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .quick-btns button { flex: 1; min-width: 100px; font-size: 13px; }
+        .status {
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            margin-top: 8px;
+        }
+        .badge {
+            display: inline-block;
+            background: #2D5016;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <h1>🌾 Krishi-Veda</h1>
+            <p>Sovereign Agricultural AI</p>
+            <div>
+                <span class="badge">Offline</span>
+                <span class="badge">Assamese</span>
+                <span class="badge">Hindi</span>
+                <span class="badge">Bengali</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <input type="text" id="query" placeholder="Ask your farming question..." 
+                   autocomplete="off" autocapitalize="sentences">
+            <button class="btn-primary" onclick="ask()">🔍 Get Advice</button>
+            <div class="result" id="result"></div>
+        </div>
+        
+        <div class="card">
+            <div class="quick-btns">
+                <button class="btn-secondary" onclick="quickAsk('best fertilizer for rice')">🌾 Rice Fertilizer</button>
+                <button class="btn-secondary" onclick="quickAsk('organic pest control')">🐛 Pest Control</button>
+                <button class="btn-secondary" onclick="quickAsk('when to plant rice')">📅 Planting Time</button>
+                <button class="btn-secondary" onclick="quickAsk('how to improve soil')">🧪 Soil Health</button>
+            </div>
+            <div class="quick-btns" style="margin-top:8px">
+                <button class="btn-secondary" onclick="getWeather()">🌤️ Weather</button>
+                <button class="btn-secondary" onclick="getPrices()">💰 Mandi Prices</button>
+            </div>
+            <div id="quickResult" class="result"></div>
+        </div>
+        
+        <div class="status" id="status">🟢 Ready | Instant Advice Mode</div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        
+        async function ask() {
+            const q = document.getElementById('query').value.trim();
+            if (!q) return;
+            
+            document.getElementById('status').innerText = '⏳ Getting advice...';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                const r = await fetch(`${API}/ask?query=${encodeURIComponent(q)}`);
+                const d = await r.json();
+                document.getElementById('result').innerText = d.advice || 'No advice available.';
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('status').innerText = '🟢 Ready | ' + (d.inference_ms || 0) + 'ms';
+            } catch(e) {
+                document.getElementById('result').innerText = 'Error connecting to Krishi-Veda. Make sure server is running.';
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('status').innerText = '🔴 Connection Error';
+            }
+        }
+        
+        async function quickAsk(q) {
+            document.getElementById('query').value = q;
+            document.getElementById('quickResult').style.display = 'none';
+            document.getElementById('status').innerText = '⏳ Loading...';
+            
+            try {
+                const r = await fetch(`${API}/ask?query=${encodeURIComponent(q)}`);
+                const d = await r.json();
+                document.getElementById('quickResult').innerText = d.advice || '';
+                document.getElementById('quickResult').style.display = 'block';
+                document.getElementById('status').innerText = '🟢 Ready';
+            } catch(e) {
+                document.getElementById('status').innerText = '🔴 Error';
+            }
+        }
+        
+        async function getWeather() {
+            try {
+                const r = await fetch(`${API}/weather?lat=24.8333&lon=92.7789`);
+                const d = await r.json();
+                document.getElementById('quickResult').innerHTML = 
+                    `🌡️ ${d.temperature_c}°C | 💧 ${d.humidity_pct}%<br>🌧️ Rain: ${d.rainfall_mm}mm | 🌱 Soil Moisture: ${(d.soil_moisture*100).toFixed(0)}%`;
+                document.getElementById('quickResult').style.display = 'block';
+            } catch(e) {}
+        }
+        
+        async function getPrices() {
+            try {
+                const r = await fetch(`${API}/market-prices?state=Assam&district=Kamrup`);
+                const d = await r.json();
+                let html = '';
+                for (const [crop, price] of Object.entries(d).slice(0,5)) {
+                    html += `${crop}: ${price}<br>`;
+                }
+                document.getElementById('quickResult').innerHTML = html;
+                document.getElementById('quickResult').style.display = 'block';
+            } catch(e) {}
+        }
+        
+        // Register service worker for offline support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
+</body>
+</html>

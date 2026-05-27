@@ -3,58 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krishi Veda Core Dashboard v2.4</title>
+    <title>Krishi Veda Matrix v3.0</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg-dark: #0a0f1d; --card-bg: #111a2e; --neon-cyan: #00f2fe; --neon-green: #4facfe; --alert-red: #ff416c; --text-main: #e2e8f0; --mesh-gold: #ff9f43; }
+        :root { --bg-dark: #0a0f1d; --card-bg: #111a2e; --neon-cyan: #00f2fe; --neon-green: #4facfe; --alert-red: #ff416c; --text-main: #e2e8f0; --mesh-gold: #ff9f43; --ayur-purple: #a55eea; }
         body { font-family: 'Courier New', Courier, monospace; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 15px; }
         .matrix-header { border-bottom: 2px solid var(--neon-cyan); padding-bottom: 10px; margin-bottom: 20px; }
         .matrix-title { font-size: 1.4rem; font-weight: bold; color: var(--neon-cyan); letter-spacing: 2px; }
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .metric-card { background: var(--card-bg); border: 1px solid #1e293b; padding: 12px; border-radius: 6px; text-align: center; position: relative; transition: all 0.3s; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .metric-card { background: var(--card-bg); border: 1px solid #1e293b; padding: 12px; border-radius: 6px; text-align: center; }
         .metric-card.alert { border-color: var(--alert-red); box-shadow: 0 0 8px rgba(255, 65, 108, 0.3); }
-        .metric-card.interactive:hover { border-color: var(--mesh-gold); box-shadow: 0 0 8px rgba(255, 159, 67, 0.4); cursor: pointer; }
         .metric-label { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; margin-bottom: 5px; }
-        .metric-value { font-size: 1.5rem; font-weight: bold; margin: 8px 0; color: #fff; }
+        .metric-value { font-size: 1.3rem; font-weight: bold; margin: 8px 0; color: #fff; }
         .badge { font-size: 0.65rem; padding: 2px 6px; background: #1e293b; border-radius: 4px; display: inline-block; }
-        .alert-text { color: var(--alert-red); font-weight: bold; animation: blink 1.5s infinite; }
         .console-box { background: #070a13; border: 1px solid #1e293b; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
         .input-group { display: flex; gap: 10px; margin-bottom: 12px; }
         input[type="text"] { flex: 1; background: #111a2e; border: 1px solid #334155; padding: 10px; color: #fff; border-radius: 4px; font-family: inherit; }
         button { background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan)); border: none; padding: 10px 18px; color: #000; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: inherit; }
-        .chart-container { background: var(--card-bg); border: 1px solid #1e293b; padding: 15px; border-radius: 6px; margin-bottom: 20px; min-height: 220px; }
+        .chart-container { background: var(--card-bg); border: 1px solid #1e293b; padding: 15px; border-radius: 6px; margin-bottom: 20px; min-height: 200px; }
         .ledger-entry { background: #151f38; border-left: 3px solid var(--neon-cyan); padding: 10px; margin-bottom: 8px; border-radius: 0 4px 4px 0; font-size: 0.85rem; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     </style>
 </head>
 <body>
 
     <div class="matrix-header">
         <div class="matrix-title">DIVINE EARTHLY INTELLIGENCE MATRIX</div>
-        <div style="font-size: 0.75rem; color: #64748b;">MODULE: KRISHI VEDA Core v2.4.0 // EDGE NODE ACTIVE</div>
+        <div style="font-size: 0.75rem; color: #64748b;">MODULE: KRISHI VEDA SOVEREIGN CORE v3.0.0</div>
     </div>
 
     <div class="grid-container">
         <div class="metric-card" id="card-moist">
-            <div class="metric-label">Soil Liquid Matrix</div>
+            <div class="metric-label">Soil Moisture Matrix</div>
             <div class="metric-value" id="val-moist">--%</div>
-            <div class="badge" id="badge-moist" style="color: var(--neon-cyan);">● Polling...</div>
+            <div class="badge" id="badge-moist" style="color: var(--neon-cyan);">Polling Edge...</div>
         </div>
-        <div class="metric-card" id="card-temp">
+        <div class="metric-card">
             <div class="metric-label">Thermal Lattice</div>
             <div class="metric-value" id="val-temp">--°C</div>
-            <div class="badge" style="color: #ff9f43;">⚡ Ingestion</div>
+            <div class="badge" style="color: var(--neon-green);">Natives OK</div>
         </div>
-        
-        <div class="metric-card" style="border-color: #54a0ff;">
-            <div class="metric-label">Hardware Bridge</div>
-            <div class="metric-value" style="font-size: 1rem; color: #54a0ff; margin-top: 12px;">ACTIVE_RX</div>
-            <div class="badge" style="color: #54a0ff; margin-top: 8px;">USB/Serial Port</div>
-        </div>
-        <div class="metric-card interactive" onclick="triggerMeshSync()" id="mesh-card">
-            <div class="metric-label">P2P Mesh Network</div>
-            <div class="metric-value" style="font-size: 1rem; color: var(--mesh-gold); margin-top: 12px;">[ SYNC NODES ]</div>
-            <div class="badge" style="background: var(--mesh-gold); color: #000; margin-top: 8px;" id="mesh-status">Tap to Align</div>
+        <div class="metric-card" style="border-color: var(--ayur-purple);">
+            <div class="metric-label">Ayurvedic Soil State</div>
+            <div class="metric-value" id="val-dosha" style="font-size: 0.85rem; color: var(--ayur-purple); word-break: break-word;">Calculating...</div>
+            <div class="badge" style="color: #fff; background: var(--ayur-purple);">C++ Sutra Core</div>
         </div>
     </div>
 
@@ -63,15 +54,15 @@
     </div>
 
     <div class="console-box">
-        <div class="metric-label" style="margin-bottom: 8px;">Vedic Tensor Compute Port [0x7E]</div>
+        <div class="metric-label" style="margin-bottom: 8px;">Vedic Tensor Compute Port [0x3A]</div>
         <div class="input-group">
-            <input type="text" id="promptInput" placeholder="Enter agricultural inquiry...">
+            <input type="text" id="promptInput" placeholder="Ask Krishi Veda for localized adjustments...">
             <button onclick="engageMatrixLoop()">Engage Matrix Loop</button>
         </div>
-        <div id="consoleOutput" style="font-size: 0.85rem; color: var(--neon-cyan); min-height: 20px;"></div>
+        <div id="consoleOutput" style="font-size: 0.85rem; color: var(--neon-cyan);"></div>
     </div>
 
-    <div class="matrix-title" style="font-size: 1rem; margin-bottom: 10px;">State Vector Ledger Archive</div>
+    <div class="matrix-title" style="font-size: 1rem; margin-bottom: 10px;">Autonomous State Vector Ledger Archive</div>
     <div id="ledgerArchive"></div>
 
     <script>
@@ -81,17 +72,11 @@
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'Moisture (%)', borderColor: '#00f2fe', data: [], tension: 0.2, yAxisID: 'y' },
-                    { label: 'Temp (°C)', borderColor: '#ff416c', data: [], tension: 0.2, yAxisID: 'y' }
+                    { label: 'Moisture (%)', borderColor: '#00f2fe', data: [], tension: 0.2 },
+                    { label: 'Temp (°C)', borderColor: '#ff416c', data: [], tension: 0.2 }
                 ]
             },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: {
-                    x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
-                    y: { grid: { color: '#1e293b' }, ticks: { color: '#fff' } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#fff' } } } }
         });
 
         async function fetchTelemetry() {
@@ -104,13 +89,12 @@
                     document.getElementById('val-moist').innerText = latest.moist + '%';
 
                     const moistCard = document.getElementById('card-moist');
-                    const moistBadge = document.getElementById('badge-moist');
                     if (latest.moist < 40.0) {
                         moistCard.classList.add('alert');
-                        moistBadge.innerHTML = '<span class="alert-text">🚨 LOW MATRIX</span>';
+                        document.getElementById('badge-moist').innerText = '🚨 BREACH';
                     } else {
                         moistCard.classList.remove('alert');
-                        moistBadge.innerHTML = '● OPTIMAL STABLE';
+                        document.getElementById('badge-moist').innerText = '🟢 OPTIMAL';
                     }
 
                     const history = [...data.telemetry].reverse();
@@ -119,7 +103,7 @@
                     telemetryChart.data.datasets[1].data = history.map(h => h.temp);
                     telemetryChart.update();
                 }
-            } catch (e) { console.error("Telemetry link dropped:", e); }
+            } catch (e) { console.error(e); }
         }
 
         async function fetchLedger() {
@@ -132,11 +116,11 @@
                     archive.innerHTML += `
                         <div class="ledger-entry">
                             <strong>VECTOR: 0x${v.id}</strong> // ${v.time} | <em>Latency: ${v.latency}</em><br>
-                            <span style="color:#94a3b8">PROMPT:</span> ${v.prompt}<br>
+                            <span style="color:#94a3b8">INQUIRY:</span> ${v.prompt}<br>
                             <span style="color:var(--neon-cyan)">ADVICE:</span> ${v.advice}
                         </div>`;
                 });
-            } catch (e) { console.error("Ledger trace read failure:", e); }
+            } catch (e) { console.error(e); }
         }
 
         async function engageMatrixLoop() {
@@ -145,7 +129,7 @@
             const prompt = promptInput.value.trim();
             if(!prompt) return;
 
-            outputBox.innerText = "⚡ Routing token matrices across core tensor lanes...";
+            outputBox.innerText = "⚡ Invoking SLM logic and retrieving RAG vectors...";
             try {
                 const res = await fetch('/api/v1/advisory', {
                     method: 'POST',
@@ -153,24 +137,11 @@
                     body: JSON.stringify({ prompt: prompt, max_tokens: 64 })
                 });
                 const result = await res.json();
-                outputBox.innerText = `[Source: ${result.source}] Execution complete.`;
+                document.getElementById('val-dosha').innerText = result.ayurvedic_state.split('(')[0];
+                outputBox.innerText = `[State Vector: Aligned] Processing complete.`;
                 promptInput.value = '';
                 fetchLedger();
             } catch (e) { outputBox.innerText = "[!] Pipeline Intercept Error."; }
-        }
-
-        async function triggerMeshSync() {
-            const statusBadge = document.getElementById('mesh-status');
-            statusBadge.innerText = "Exporting...";
-            try {
-                const res = await fetch('/api/v1/mesh/export');
-                const data = await res.json();
-                console.log("Mesh Data Packets Ready:", data);
-                setTimeout(() => { statusBadge.innerText = "Aligned 🟢"; }, 800);
-                setTimeout(() => { statusBadge.innerText = "Tap to Align"; }, 3000);
-            } catch (e) {
-                statusBadge.innerText = "Link Failed 🔴";
-            }
         }
 
         setInterval(fetchTelemetry, 4000);
