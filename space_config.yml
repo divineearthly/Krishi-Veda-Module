@@ -1,0 +1,7 @@
+title: Krishi-Veda API
+emoji: 🌾
+colorFrom: green
+colorTo: indigo
+sdk: docker
+pinned: true
+app_port: 5000
