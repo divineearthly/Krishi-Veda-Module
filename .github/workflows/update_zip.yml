@@ -1,0 +1,30 @@
+name: Build Update Zip
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create update zip
+        run: |
+          zip -j update_files.zip \
+            app.py main.py \
+            backend/core/slm_engine.py \
+            backend/core/vedic_kernels_bridge.py \
+            backend/core/vedic_prompt.py \
+            backend/services/real_time_data.py \
+            update_checker.py updates.json \
+            farmer_app.html index.html \
+            2>/dev/null || true
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: update-latest
+          name: "Auto-Update Files"
+          body: "🕉️ Latest Python code for Krishi-Veda auto-update"
+          files: update_files.zip
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
