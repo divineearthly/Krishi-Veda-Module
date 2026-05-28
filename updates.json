@@ -3,7 +3,7 @@
   "kernel_version": "1.0.0",
   "release_date": "2025-05-28",
   "apk_url": "https://github.com/divineearthly/Krishi-Veda-Module/releases/latest/download/krishi-veda.apk",
-  "update_zip_url": "https://github.com/divineearthly/Krishi-Veda-Module/releases/latest/download/update_files.zip",
+  "update_zip_url": "https://github.com/divineearthly/Krishi-Veda-Module/releases/download/v2.0.0-update/update_files.zip",
   "changes": "Initial Dharma release — Vedic kernels + Vriksh Ayurveda + auto-update",
   "min_version": "2.0.0"
 }
