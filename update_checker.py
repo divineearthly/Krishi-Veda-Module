@@ -31,3 +31,21 @@ def check_for_update():
     except:
         pass
     return None
+
+def apply_update_and_restart(zip_path):
+    """Extract update zip and restart the app server."""
+    import zipfile
+    import os
+    
+    target_dir = "/sdcard/DivineEarthly/krishi_veda/"
+    os.makedirs(target_dir, exist_ok=True)
+    
+    with zipfile.ZipFile(zip_path, 'r') as zf:
+        zf.extractall(target_dir)
+    
+    # Signal the server to restart with new code
+    restart_flag = os.path.join(target_dir, ".restart")
+    with open(restart_flag, 'w') as f:
+        f.write("1")
+    
+    return True
