@@ -5,7 +5,7 @@ package.domain = org.earthly.divine
 source.dir = .
 source.include_exts = py,png,jpg,html,css,js,json,md
 version = 2.0.0
-requirements = python3,flask,requests
+requirements = python3,kivy,flask,requests
 orientation = portrait
 android.permissions = INTERNET,ACCESS_NETWORK_STATE
 android.api = 33
@@ -20,3 +20,7 @@ p4a.branch = master
 [buildozer]
 log_level = 2
 warn_on_root = 1
+
+# WebView settings
+android.bootstrap = webview
+android.webview_url = https://divinesouljoy-krishi-veda-api.hf.space
