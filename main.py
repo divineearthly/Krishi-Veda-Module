@@ -1,39 +1,23 @@
 """
-Krishi-Veda Android App — Starts server + opens browser
+Krishi-Veda Android Launcher
+Opens the live API in phone browser.
 """
-import os
-import sys
-import time
-import threading
 import webbrowser
-
-# Add backend path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import threading
+import time
 
 print("🕉️ Krishi-Veda starting...")
-print("Starting API server on port 5000...")
 
-def start_server():
-    from app import app
-    app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
+# Open the live API
+def open_dashboard():
+    time.sleep(1)
+    webbrowser.open("https://divinesouljoy-krishi-veda-api.hf.space")
 
-# Start server in background
-server_thread = threading.Thread(target=start_server, daemon=True)
-server_thread.start()
-time.sleep(3)
-
-# Auto-open the dashboard in browser
-print("Opening farmer dashboard...")
-webbrowser.open("http://localhost:5000")
-
-print("=" * 50)
-print("🌾 Krishi-Veda Ready")
-print("http://localhost:5000")
-print("=" * 50)
+threading.Thread(target=open_dashboard, daemon=True).start()
 
 # Keep alive
 try:
     while True:
         time.sleep(1)
 except KeyboardInterrupt:
-    print("Server stopped.")
+    print("Closed.")
