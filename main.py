@@ -1,21 +1,29 @@
 """
-Krishi-Veda Android Launcher
-Opens the live API in phone browser.
+Krishi-Veda Android App
+Opens the live Hugging Face API in the phone browser.
+No local server needed — works instantly.
 """
+import android
+from android.permissions import request_permissions, Permission
 import webbrowser
-import threading
 import time
 
 print("🕉️ Krishi-Veda starting...")
 
-# Open the live API
-def open_dashboard():
-    time.sleep(1)
-    webbrowser.open("https://divinesouljoy-krishi-veda-api.hf.space")
+# Request network permission
+try:
+    request_permissions([Permission.INTERNET])
+except:
+    pass
 
-threading.Thread(target=open_dashboard, daemon=True).start()
+# Wait briefly then open the live API
+time.sleep(2)
+webbrowser.open("https://divinesouljoy-krishi-veda-api.hf.space")
 
-# Keep alive
+print("Dashboard opened in browser.")
+print("If nothing appears, go to: krishi-veda-api.hf.space")
+
+# Keep the app alive
 try:
     while True:
         time.sleep(1)
