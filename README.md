@@ -5,7 +5,9 @@ colorFrom: green
 colorTo: yellow
 sdk: docker
 pinned: false
+app_port: 5000
 ---
+
 
 # 🌾 Krishi-Veda: Sovereign Vedic Agricultural AI
 
