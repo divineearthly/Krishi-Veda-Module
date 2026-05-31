@@ -1,0 +1,36 @@
+{
+  "regions": {
+    "assam": {
+      "climate": "tropical_monsoon",
+      "soil": "alluvial",
+      "crops": {
+        "kharif": ["Sali Rice", "Jute", "Maize"],
+        "rabi": ["Boro Rice", "Mustard", "Potato"]
+      }
+    },
+    "punjab": {
+      "climate": "semi_arid",
+      "soil": "loamy",
+      "crops": {
+        "kharif": ["Basmati Rice", "Cotton", "Maize"],
+        "rabi": ["Wheat", "Barley", "Gram"]
+      }
+    },
+    "maharashtra": {
+      "climate": "tropical_wet_dry",
+      "soil": "black_cotton",
+      "crops": {
+        "kharif": ["Soybean", "Cotton", "Pigeon Pea"],
+        "rabi": ["Sorghum (Jowar)", "Wheat", "Chickpea"]
+      }
+    },
+    "global_temperate": {
+      "climate": "temperate",
+      "soil": "loam",
+      "crops": {
+        "spring": ["Wheat", "Oats", "Barley"],
+        "summer": ["Corn", "Soybeans"]
+      }
+    }
+  }
+}
