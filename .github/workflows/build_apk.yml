@@ -12,7 +12,7 @@ jobs:
       - name: Install C/C++ Autotools Dependencies (Ubuntu 24.04 Fix)
         run: |
           sudo apt-get update
-          sudo apt-get install -y autoconf automake libtool libtool-bin pkg-config libffi-dev
+          sudo apt-get install -y autoconf automake libtool libtool-bin pkg-config libffi-dev libltdl-dev
       - uses: actions/setup-java@v4
         with:
           java-version: "17"
@@ -22,7 +22,7 @@ jobs:
           python-version: "3.11"
       - run: |
           sudo apt-get update -qq
-          sudo apt-get install -y libtool libtool-bin autoconf automake pkg-config -qq python3-pip python3-dev build-essential git autoconf automake libtool pkg-config zlib1g zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev zip unzip
+          sudo apt-get install -y libtool libtool-bin autoconf automake pkg-config -qq python3-pip python3-dev build-essential git autoconf automake libtool pkg-config zlib1g zlib1g-dev libncurses-dev cmake libffi-dev libltdl-dev libssl-dev zip unzip
       - run: pip install buildozer cython virtualenv flask requests
       - name: Build with system Android SDK
         run: |

@@ -12,7 +12,7 @@ jobs:
         with: {java-version: '17', distribution: 'temurin'}
       - run: |
           sudo apt-get update -qq
-          sudo apt-get install -y libtool libtool-bin autoconf automake pkg-config -qq python3-pip python3-dev build-essential git zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev zip unzip
+          sudo apt-get install -y libtool libtool-bin autoconf automake pkg-config -qq python3-pip python3-dev build-essential git zlib1g-dev libncurses-dev cmake libffi-dev libltdl-dev libssl-dev zip unzip
           pip install python-for-android
       - run: |
           p4a create --requirements=python3,flask,requests --arch=arm64-v8a \
