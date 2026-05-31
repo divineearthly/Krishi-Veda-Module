@@ -1,3 +1,4 @@
+from backend.core.crop_manager import crop_manager
 """
 Krishi-Veda API — Production Version
 Rule-based advice: INSTANT (no model loading)
@@ -200,8 +201,19 @@ def ask():
     """INSTANT advice — rule engine, no model loading."""
     soil = request.args.get('soil', 'alluvial')
     paksha = request.args.get('paksha', 'waxing')
+    query = request.args.get('q', '').lower()
+
+    # 1. Detect region from user query (Defaults to Assam)
+    detected_region = "assam"
+    for r in ["punjab", "maharashtra", "assam", "global_temperate"]:
+        if r in query:
+            detected_region = r
+            break
     
-    # Try to get live weather
+    # 2. Query our new lightweight JSON manager
+    crop_advice = crop_manager.get_crops_for_region(detected_region)
+
+    # Try to get live weather (Untouched!)
     weather = {"temperature_c": 30, "rainfall_mm": 80}
     ndvi = {"ndvi": 0.5}
     try:
@@ -212,12 +224,18 @@ def ask():
         ndvi = get_ndvi_data(lat, lon)
     except:
         pass
-    
+
     result = get_instant_advice(
         [6.5, 35, 28, 40, 50, 2.0, 0.3, 28],
         soil_type=soil, paksha=paksha, weather=weather, ndvi=ndvi
     )
-    
+
+    # 3. Inject the dynamic global crop database into the final string
+    if "advice" in result:
+        result["advice"] = f"{result['advice']}\n\n🌱 Global Crop Guide: {crop_advice}"
+    else:
+        result["crop_advice"] = crop_advice
+
     return jsonify({
         "question": request.args.get('q', ''),
         **result,
