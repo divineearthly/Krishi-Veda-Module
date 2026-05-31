@@ -196,7 +196,8 @@ def realtime_data():
     except:
         return jsonify({"error": "unavailable"})
 
-@app.route('/ask')
+@app.route('/api/v1/plan', methods=['GET', 'POST'])
+@app.route('/ask', methods=['GET', 'POST'])
 def ask():
     """INSTANT advice — rule engine, no model loading."""
     soil = request.args.get('soil', 'alluvial')

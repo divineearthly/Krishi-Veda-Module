@@ -61,7 +61,7 @@
             try {
                 // Try multiple possible URLs
                 const urls = [
-                    'http://localhost:5000/ask?query=',
+                    '/ask?query=',
                     'http://127.0.0.1:5000/ask?query=',
                     '/ask?query='
                 ];
@@ -101,7 +101,7 @@
         }
         
         // Test connection on load
-        fetch('http://localhost:5000/health')
+        fetch('/health')
             .then(r => r.json())
             .then(d => {
                 if (d.status === 'healthy') {
