@@ -1,3 +1,12 @@
+---
+title: Krishi Veda
+emoji: 🌾
+colorFrom: green
+colorTo: yellow
+sdk: docker
+pinned: false
+---
+
 # 🌾 Krishi-Veda: Sovereign Vedic Agricultural AI
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
