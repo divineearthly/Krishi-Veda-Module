@@ -9,6 +9,10 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Install C/C++ Autotools Dependencies (Ubuntu 24.04 Fix)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake libtool libtool-bin pkg-config libffi-dev
       - uses: actions/setup-java@v4
         with:
           java-version: "17"
