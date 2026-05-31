@@ -287,6 +287,42 @@ def vedic_quantum():
     result = engine.query(question, soil_type=soil, lat=lat, lon=lon)
     return jsonify(result)
 
+
+# --- MOCK DASHBOARD ROUTES ---
+@app.route('/api/v1/sensors', methods=['GET', 'POST'])
+def mock_sensors():
+    return jsonify({
+        "status": "success",
+        "data": {
+            "pH": 6.5, 
+            "N": 35, 
+            "P": 28, 
+            "K": 40, 
+            "moisture": 50, 
+            "organic_matter": 2.0,
+            "sensor_status": "Virtual Link Active"
+        }
+    })
+
+@app.route('/api/v1/history', methods=['GET', 'POST'])
+def mock_history():
+    return jsonify({
+        "status": "success", 
+        "data": [
+            {"day": "Day 1", "moisture": 48, "pH": 6.4},
+            {"day": "Day 3", "moisture": 49, "pH": 6.5},
+            {"day": "Day 7", "moisture": 50, "pH": 6.5}
+        ],
+        "message": "7-Day History Synced."
+    })
+
+@app.route('/api/v1/advisory', methods=['GET', 'POST'])
+def mock_advisory():
+    return jsonify({
+        "status": "success", 
+        "advisory": "Vedic Kernel Analysis: Soil NPK is optimal. Maintain current moisture levels for Kharif planting."
+    })
+
 if __name__ == '__main__':
     print("=" * 50)
     print("  KRISHI-VEDA API v2 — Instant + AI Advice")
